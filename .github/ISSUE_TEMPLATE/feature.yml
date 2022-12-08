@@ -1,0 +1,42 @@
+name: New feature
+description: Creating new feature
+title: "[Feature ⭐] "
+labels: ["Feature ⭐"]
+body:
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: "Feature type"
+      description: Which type of feature you are going to create ?
+      options:
+        - new class/member features
+        - non member functions
+        - new/modify socket programming functions
+        - Makefile
+        - Misc
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: "Implementing process / Goal"
+      description: (Auto highlighting in markdown)
+      render: Markdown
+
+  - type: textarea
+    id: related-code
+    attributes:
+      label: "Related code"
+      description: API or example codes (Auto highlighting in JS)
+      render: js
+
+  - type: dropdown
+    id: others
+    attributes:
+      label: "Note"
+      description: Additional message
+      options:
+        - Need to modify existing codes
+        - Huge-scale construction is required
+      multiple: true
