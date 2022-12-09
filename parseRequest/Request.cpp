@@ -1,10 +1,10 @@
 #include "Request.hpp"
 
-Request::Request(){}
+Request::Request() {}
 
-Request::~Request(){}
+Request::~Request() {}
 
-Request::Request(const Request &orig){}
+Request::Request(const Request &orig) {}
 
 Request& Request::operator=(const Request &orig) {
 	return (*this);
@@ -16,6 +16,11 @@ std::string Request::getBody() { return (_body); }
 std::string	Request::getControl() { return (_control); }
 std::string	Request::getTarget() { return (_target); }
 std::string	Request::getVersion() { return (_version); }
+int 		Request::getMethod() { return (_method); }
+
+void 		Request::setOrig(std::string &orig) {
+	_orig = orig;
+}
 
 void		Request::setHead(std::string &head) {
 	_head = head;

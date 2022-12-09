@@ -2,18 +2,20 @@
 # define REQUEST_HPP
 # include <iostream>
 
+/** Request class
+ * author: jinoh
+ * date: 2022.12.09
+ */
 class Request {
 public:
-	enum METHOD
-	{
-		GET, POST, DELETE
-	};
 	std::string	getOrig();
 	std::string	getHead();
 	std::string	getBody();
 	std::string	getControl();
 	std::string	getTarget();
 	std::string	getVersion();
+	int 		getMethod();
+	void 		setOrig(std::string &orig);
 	void		setHead(std::string &head);
 	void 		setBody(std::string &body);
 	void		setControl(std::string &control);
