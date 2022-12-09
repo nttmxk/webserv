@@ -1,19 +1,19 @@
-name: New feature
-description: New feature or request
-title: "[Feature ⭐] "
-labels: ["Feature ⭐"]
+name: Test
+description: Creating new feature
+title: "[Test] "
+labels: ["Test"]
 body:
   - type: dropdown
-    id: feature-type
+    id: Test-type
     attributes:
-      label: "Feature type"
-      description: Which type of feature you are going to create ?
+      label: "Test type"
+      description: What are you going to do for Testing ?
       options:
-        - new class/member features
-        - non member functions
-        - new/modify socket programming functions
-        - Makefile
-        - Misc
+        - pratice before coding
+        - pratice for divided part
+        - Testing for functions
+        - Testing for running
+        - Testing for everything
     validations:
       required: true
 
