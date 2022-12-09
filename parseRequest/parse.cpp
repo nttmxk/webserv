@@ -4,6 +4,7 @@
 int		printError(std::string message);
 int		checkWhitespace(std::string &mControl);
 int		checkVersion(std::string version);
+int		checkHeader(std::string &mHeader);
 
 int		parseMessage(Request &request);
 int		parseStartLine(Request &request, size_t &pos);
@@ -37,12 +38,10 @@ int main() // test function
 			"\r\n"
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
 			"<string xmlns=\"http://clearforest.com/\">string</string>";
-
 	request.setOrig(mOrig);
 
-	parseMessage(request);
-
-	printRequest(request);
+	if (parseMessage(request) == 0)
+		printRequest(request);
 
 	return (0);
 }
@@ -112,6 +111,7 @@ int parseControl(Request &request, std::string &mControl, std::string method)
 	if (checkVersion(mControl.substr(pos + 1)) < 0)
 		return printError("# Control Line Error <" + method + "/Version>\n");
 	request.setVersion(mControl.substr(pos + 1));
+	request.setControl(mControl);
 	return (0);
 }
 
@@ -154,9 +154,33 @@ int	parseHeader(Request &request, size_t &prev)
 	if (next == std::string::npos)
 		return printError("# Header Line Error <Npos>\n");
 
-	mHeader = mOrig.substr(prev + 2, next - prev - 2);
+	mHeader = mOrig.substr(prev + 2, next - prev);
+	if (checkHeader(mHeader) < 0)
+		return printError("# Header Line Error <Colon or \\r\\n>\n");
 	request.setHead(mHeader);
 	prev = next + 4;
+	return (0);
+}
+
+int		checkHeader(std::string &mHeader)
+{
+	size_t	pos_nl;
+	size_t	pos_colon;
+
+	pos_nl = -1;
+	while (1){
+		pos_colon = mHeader.find(':', pos_nl + 1);
+		if (pos_colon == std::string::npos){
+			if (mHeader[pos_nl + 1] != '\0')
+				return (-1);
+			break ;
+		}
+		if (mHeader.substr(pos_nl + 1, pos_colon - pos_nl - 1).find(' ') != std::string::npos)
+			return (-1); // SP found between the header field_name and colon
+		pos_nl = mHeader.find('\n', pos_colon + 1);
+		if (pos_nl == std::string::npos || mHeader[pos_nl - 1] != '\r')
+			return (-1);
+	}
 	return (0);
 }
 
@@ -173,6 +197,7 @@ void	printRequest(Request &request)
 {
 	std::cout <<
 			  "[Request Line]" <<
+			  "\n" << request.getControl() <<
 			  "\nMethod:" << request.getMethod() <<
 			  "\nTarget:" << request.getTarget() <<
 			  "\nVersion:" << request.getVersion() <<
