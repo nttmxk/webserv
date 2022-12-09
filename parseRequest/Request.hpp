@@ -35,8 +35,34 @@ private:
 	std::string	_body;
 	std::string	_target;
 	std::string	_version; // upper class might have it
-	int			_method;
+	int			_method; // GET POST DELETE
 
 };
+
+/*
+ * parse_utils.cpp
+ */
+int		printError(std::string message);
+void	printRequest(Request &request);
+
+/*
+ * parse.cpp
+ */
+int		parseMessage(Request &request);
+
+/*
+ * parse_requestline.cpp
+ */
+int		parseStartLine(Request &request, size_t &pos);
+
+/*
+ * parse_header.cpp
+ */
+int		parseHeader(Request &request, size_t &prev);
+
+/*
+ * parse_body.cpp
+ */
+int		parseBody(Request &request, size_t &prev);
 
 #endif
