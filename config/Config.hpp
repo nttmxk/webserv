@@ -5,36 +5,58 @@
 # include <fstream>
 # include <algorithm>
 # include <stdexcept>
+# include <vector>
+# include <map>
 
 #include "Config_struct.hpp"
+// using namespace std;
 
-struct Location {
+class BaseServer
+{
+public:
 
-};
+    BaseServer(){};
+	BaseServer(const std::string& src);
+    ~BaseServer() {};
+    
+    //  Access Location
+	Location& operator[](const std::string& key);
+	const std::map<std::string, Location>& getLocations() const;
+
+    //  Access Attribution
+	const std::vector<std::string>& BServer(const std::string& key) const;
+
+	bool is_exist(const std::string& key, std::string) const;
+	//	data to std::string
+	// std::string id();
+	// std::string str(size_t tab_size);
 
 
-struct Server {
-
+protected:
+    ServerInfo 							BServer;
+    std::map< std::string, Location >	BLocation;
+	bool								redirect;
 };
 
 
 struct Config_base
 {
 protected:
-	std::vector<Server> 	_servers;
-	std::vector<Location>	_location;
+	std::vector<BaseServer> 		base;
+	int								numOfServer;
 };
+
+
+
 
 class Config : public Config_base
 {
 private:
-	std::string path;
-	std::string content;
-	std::string token;
-
-	int fd;
-	int workers;
-	//std::vector<ConfigServer> 			_servers;
+	// std::string path;
+	// std::string content;
+	// std::string token;
+	// int fd;
+	// int workers;
 
 public:
 	Config();
