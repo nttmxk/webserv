@@ -250,14 +250,22 @@ void HandleTCPClient(int clntSocket)
     fprintf(stderr, "echoBuffer = %s \n", echoBuffer);
     fprintf(stderr, "recvMsgSize = %d \n", recvMsgSize);
 
-    while (recvMsgSize > 0)
-    {
-        if (send(clntSocket, echoBuffer, recvMsgSize, 0) != recvMsgSize)
+    // while (recvMsgSize > 0)
+    // {
+        // sleep (1);
+        system("netstat -an | grep 8080");
+        printf("connection fd : %d\n", clntSocket);
+        system("lsof -iTCP | grep server2");
+        if (send(clntSocket, "abcdefghi", recvMsgSize, 0) == -1)
             DieWithError("send() failed");
+        system("netstat -an | grep 8080");
 
         if ((recvMsgSize = recv(clntSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
             DieWithError("recv() failed");
-    }
 
+    // }
+    fprintf(stderr, "send = %s \n", echoBuffer);
+    fprintf(stderr, "recv = %d \n", recvMsgSize);
     close(clntSocket);
+    exit(0);
 }

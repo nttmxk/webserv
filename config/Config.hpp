@@ -83,8 +83,7 @@ public:
 std::ostream &operator<<(std::ostream &ost, const Config &conf);
 
 Config::Config()
-{
-}
+{}
 
 Config::~Config()
 {
