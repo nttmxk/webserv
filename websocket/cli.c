@@ -6,7 +6,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#define PORT 4000
+#define PORT 8080
 
 int main(int argc, char const *argv[])
 {
@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     struct sockaddr_in serv_addr;
     char *hello = "Hello from client";
     char buffer[1024] = {0};
-    if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         printf("\n Socket creation error \n");
         return -1;
@@ -31,15 +31,20 @@ int main(int argc, char const *argv[])
         printf("\nInvalid address/ Address not supported \n");
         return -1;
     }
-	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    system("netstat -an | grep 8080");
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
         printf("\nConnection Failed \n");
         return -1;
     }
+    system("netstat -an | grep 8080");
     send(sock , hello , strlen(hello) , 0 );
     printf("Hello message sent\n");
-    // valread = read( sock , buffer, 1024);
+    valread = read( sock , buffer, 1024);
     printf("%s\n",buffer );
+    system("netstat -an | grep 8080");
+    
     close(sock);
+    system("netstat -an | grep 8080");
     return 0;
 }

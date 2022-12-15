@@ -188,6 +188,7 @@ int main(int argc, char * argv[])
     struct sockaddr_in echoClntAddr;
     unsigned short echoServPort;
     unsigned int clntLen;
+    int kq;
 
     if (argc != 2)
     {
@@ -199,6 +200,10 @@ int main(int argc, char * argv[])
         fprintf(stderr, "%s\n", argv[0]);
     }
     
+    kq = kqueue();
+
+	if (kq == -1)
+		DieWithError("kqueue() failed");
 
     echoServPort = atoi(argv[1]);
 
@@ -250,22 +255,26 @@ void HandleTCPClient(int clntSocket)
     fprintf(stderr, "echoBuffer = %s \n", echoBuffer);
     fprintf(stderr, "recvMsgSize = %d \n", recvMsgSize);
 
-    // while (recvMsgSize > 0)
-    // {
-        // sleep (1);
-        system("netstat -an | grep 8080");
-        printf("connection fd : %d\n", clntSocket);
-        system("lsof -iTCP | grep server2");
+    while (recvMsgSize > 0)
+    {
+        // system("netstat -an | grep 8080");
+        // printf("connection fd : %d\n", clntSocket);
+        // system("lsof -iTCP | grep server2");
         if (send(clntSocket, "abcdefghi", recvMsgSize, 0) == -1)
             DieWithError("send() failed");
-        system("netstat -an | grep 8080");
-
+        // system("netstat -an | grep 8080");
         if ((recvMsgSize = recv(clntSocket, echoBuffer, RCVBUFSIZE, 0)) < 0)
             DieWithError("recv() failed");
+    }
 
-    // }
-    fprintf(stderr, "send = %s \n", echoBuffer);
-    fprintf(stderr, "recv = %d \n", recvMsgSize);
     close(clntSocket);
     exit(0);
+}
+
+
+void set_client(int socket, int fd)
+{
+	add_read_event(socket, fd);
+	add_write_event(socket, fd);
+	add_timeout(socket);
 }
