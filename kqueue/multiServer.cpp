@@ -49,8 +49,6 @@ int main()
     server_addr.sin_port = htons(8080);
     if (bind(server_socket, (struct sockaddr*) &server_addr, sizeof(server_addr)) == -1)
         exit_with_perror("bind() error\n" + string(strerror(errno)));
- 	if (bind(server_socket, (struct sockaddr * ) &server_addr, sizeof(server_addr)) < 0)
-        exit_with_perror("bind() error\n" + string(strerror(errno)));
     if (listen(server_socket, 5) == -1)
         exit_with_perror("listen() error\n" + string(strerror(errno)));
     fcntl(server_socket, F_SETFL, O_NONBLOCK);

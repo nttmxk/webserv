@@ -52,7 +52,7 @@ int main(int argc, char * argv[])
 
     totalBytesRcvd = 0;
     printf("Received: ");
-    while (totalBytesRcvd < echoStringLen)
+    while (1)
     {
         if ((bytesRcvd = recv(sock, echoBuffer, RCVBUFSIZE - 1, 0)) <= 0)
             DieWithError("recv() failed or connection closed promaturely");
