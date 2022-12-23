@@ -28,7 +28,7 @@ struct Location
 
 struct ServerInfo
 {
-	std::vector<std::string> serverName;
+	std::string serverName;
 	std::map<std::string, std::string> errorPages;
 	std::string host;
 	std::string port;
