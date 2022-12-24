@@ -40,7 +40,7 @@ class HttpResponse
 	public:
 		/* cannonical form */
 		HttpResponse();
-		HttpResponse(HttpResInfo &info); //take reference
+		HttpResponse(HttpReqInfo &info, std::string resourceLocation); //take reference
 		~HttpResponse();
 		HttpResponse(HttpResponse const &obj);
 		HttpResponse &operator=(HttpResponse const &obj);
