@@ -11,17 +11,18 @@
 
 struct Location
 {
-	typedef bool Autoindex_type;
-  	const Autoindex_type off = false;
-  	const Autoindex_type on = true;
-    typedef Autoindex_type Autoindex;
+	// typedef bool Autoindex_type;
+  	// const Autoindex_type off = false;
+  	// const Autoindex_type on = true;
+    // typedef Autoindex_type Autoindex;
 
 	std::string root;
 	std::vector<std::string> Methods;
 	std::vector<std::string> index;
-	Autoindex listing;
 	int maxBody;
 	int returnType;
+	bool autoListing;
+	std::string returnRoot;
 
 };
 
@@ -29,7 +30,7 @@ struct Location
 struct ServerInfo
 {
 	std::string serverName;
-	std::map<std::string, std::string> errorPages;
+	std::map<std::string, std::vector<int> > errorPages;
 	std::string host;
 	std::string port;
 	int maxRequestBodySize;

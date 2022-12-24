@@ -8,7 +8,7 @@
 # include <vector>
 # include <map>
 #include <stdio.h>
-
+#include <sstream>
 #include "Config_struct.hpp"
 // using namespace std;
 
@@ -43,23 +43,48 @@ public:
 	// std::string str(size_t tab_size);
 
 	void setBServer(std::string fo, std::string str);
+	void setError(std::string str, std::vector<int> v);
+	
+	template <typename T>
+	std::string printPair8(const T &iterator, bool nl);
+
 protected:
     ServerInfo 							BServer;
     std::map< std::string, Location >	BLocation;
 	bool								redirect;
 };
 
+using vector_int_type = std::vector<int>;
+std::ostream& operator << (std::ostream& os, const vector_int_type& vect) {
+    for (const auto& i : vect)
+        os << ' ' << i;
+    return os;
+}
+
+
 void BaseServer::setBServer(std::string fo, std::string str)
 {
-	if (fo == "host")
+	if (fo == "h")
 		BServer.host = str;
-	else if (fo == "port")
+	else if (fo == "p")
 		BServer.port = str;
-	else if (fo == "servername")
+	else if (fo == "s")
+	{
+		std::cout << "str = [" << str << "]" << std::endl;
 		BServer.serverName = str;
+	}
 	// else
 	// 	BServer.maxRequestBodySize = atoi(str);
-	std::cout << "str = " << str <<std::endl;
+
+}
+
+void BaseServer::setError(std::string str, std::vector<int> v)
+{
+	BServer.errorPages.insert(std::make_pair(str, v));
+	
+    //  for (auto& item : BServer.errorPages)
+    //     std::cout << item.first << " is: " << item.second << std::endl;
+	
 }
 
 struct Config_base
@@ -86,12 +111,14 @@ public:
 		virtual const char	*what() const throw();
 	};
 
+	//int check_bracket(int type, int bracket);
 
 private:
 	void configInit(const std::string path);
 	void configParse();
 	void serverInit(int, int);
 	void printV(std::vector <std::string> const &a);
+	
 
 
 private:
@@ -181,9 +208,9 @@ void	Config::configParse()
 void	Config::serverInit(int start, int end)
 {
 	size_t p;
+	size_t sub;
 	BaseServer tmpServer;
 
-	numOfServer += 1;
 	std::cout << "i = " << start << "j = " << end << std::endl;
 	end += start;
   	for ( ; start < end; start++) 
@@ -192,9 +219,9 @@ void	Config::serverInit(int start, int end)
 		{
 			if ((p = file[start].find(":")) != std::string::npos)
 			{
-				size_t sub = file[start].find(" ");
-				tmpServer.setBServer("host", file[start].substr(sub, p - sub));
-				tmpServer.setBServer("post", file[start].substr(p + 1));
+				sub = file[start].find(" ") + 1;
+				tmpServer.setBServer("h", file[start].substr(sub, p - sub));
+				tmpServer.setBServer("p", file[start].substr(p + 1));
 			}
 			else
 			{
@@ -204,24 +231,130 @@ void	Config::serverInit(int start, int end)
 		}	
 		else if (file[start].find("server_name ") != std::string::npos)
 		{
-
+			sub = file[start].find(" ") + 1;
+			tmpServer.setBServer("s", file[start].substr(sub));
 		}
 		else if (file[start].find("error_page ") != std::string::npos)
 		{
+			std::vector<int> tmpErrorNum;
+			size_t slash;
 
+			sub = file[start].find(" ") + 1;
+			if ((slash = file[start].find('/')) == std::string::npos)
+				slash = file[start].size();
+			else
+				slash -= 1;
+			std::string subS = file[start].substr(sub, slash - sub);
+			std::stringstream ss(subS);
+			std::string temp;
+			while (getline(ss, temp, ' '))
+			{
+				int i;
+				std::stringstream ssInt(temp);
+				ssInt >> i;
+				// std::cout << "sub num = ["<< i <<"]" << std::endl;
+				tmpErrorNum.push_back(i);
+			}
+			tmpServer.setError(slash == file[start].size() ? "": file[start].substr(slash + 1), tmpErrorNum);
 		}
 		else if (file[start].find("location ") != std::string::npos)
 		{
+			//std::map< std::string, Location >	BLocation;
+			sub = file[start].find(" ") + 1;
+			size_t q;
+			std::string str;
+			std::string tmp;
+			Location tmpLo;
+			
+			if ((q = file[start].find(" {")) == std::string::npos)
+			{
+				std::cerr << "Error: Location block { } syntax error" << std::endl;
+				exit (1);
+			}
+			str = file[start].substr(sub, q - sub);
+			if(str.empty())
+			{
+				std::cerr << "Error: Location block / syntax error" << std::endl;
+				exit (1);
+			}
+			 int flag;
+			// = (file[++start] != "}");
+			// // int i = flag == true ? 1 : 0;
+			// std::cout << "i === " << i << std::endl;
+			while (flag = (file[++start] != "}"))
+			{
+				if ((sub = file[start].find(" ")) != std::string::npos)
+				{
+					tmp = file[start].substr(0, sub);
+					// std::cout <<"tmp = [" << tmp << "]" << std::endl;
+					if (tmp == "root")
+					{
+
+					}
+					else if (tmp == "method")
+					{
+
+					}
+					else if (tmp == "index")
+					{
+
+					}
+					else if (tmp == "max_body")
+					{
+
+					}
+					else if (tmp == "returnType")
+					{
+
+					}
+					else if (tmp == "autoListing")
+					{
+
+					}
+					else if (tmp == "return")
+					{
+
+					}
+					else
+					{
+						std::cerr << "Error: Location block has wrong syntax error" << std::endl;
+						exit (1);
+					}
+				}
+				else
+				{
+					std::cerr << "Error: Location block key value syntax error" << std::endl;
+					exit (1);
+				}
+			}
+			if (flag)
+			{
+				std::cerr << "Error: Location block {  } syntax error" << std::endl;
+				exit (1);
+			}
+
+			
 
 		}
 		else if (file[start].find("cgi ") != std::string::npos)
 		{
 
 		}
-		std::cout << "start = " << start<< "start + end = "<< start + end<< std::endl;
+		// std::cout << "start = " << start<< "start + end = "<< start + end<< std::endl;
 	}
-	// checkfillup();
+	numOfServer += 1;
+	/* checkfillup();
+		1. post is digit
+		2. check there are all pare
+		3. check there is at least one location block every server
+		4. { } 확인
+
+	*/
 }
+
+
+
+
 void Config::printV(std::vector <std::string> const &a) {
 
 
@@ -229,6 +362,27 @@ void Config::printV(std::vector <std::string> const &a) {
 		std::cout << a.at(i) << '\n';
 	std::cout << "\n\n\n";
 }
+
+
+// int	check_bracket(int type, int quotat)
+// {
+// 	if (type == DOUBLE)
+// 	{
+// 		if (quotat == 0)
+// 			quotat = DOUBLE;
+// 		else if (quotat == DOUBLE)
+// 			quotat = 0;
+// 	}
+// 	else if (type == SINGLE)
+// 	{
+// 		if (quotat == 0)
+// 			quotat = SINGLE;
+// 		else if (quotat == SINGLE)
+// 			quotat = 0;
+// 	}
+// 	return (quotat);
+// }
+
 
 const char	*Config::FileNotFoundException::what() const throw(){
 	return "Exception thrown: could not open configuration file";
