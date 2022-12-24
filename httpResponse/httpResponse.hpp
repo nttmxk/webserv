@@ -16,13 +16,18 @@ class StatusLine;
 typedef  struct HttpResInfo
 {
 	StatusLine statusLine;
-	std::string serverName;
+	TimeStamp date;
+	std::string server;
 	TimeStamp lastModified;
-	std::string eTag; //for cache
+	std::string contentLocation; // 콘텐츠 협상 후 실제 로케이션... /user.html or /user.xml
+	// std::string location; // 300번대 사용하는 리다이렉션 용 URL 콘텐츠 협상 전... /user
+	// std::string eTag; //for cache
+	std::string transferEncoding; //chunked etc
 	unsigned int contentLength;
-	std::string contentType;
-	std::string connection;
-	std::string body;
+	std::string contentType; //text/html etc
+	std::string contentEncoding; //gzip etc
+	std::string connection; //keep-alive etc
+	std::string body; // HTML Body :  <body> ... </body>
 
 } HttpResInfo;
 
@@ -48,7 +53,6 @@ class HttpResponse
 
 		/* send response */
 		void sendResToClient(); // [!] client에 response (인코딩된 파일 및 헤더, html)를 보내는(write()/send()) 역할은 Connection 객체가 하는게 좋을지 회의 필요
-
 };
 //-------------------------------------------------------------------------------
 
@@ -148,3 +152,32 @@ Content-Type: text/html
 // ref : https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview
 // ref : https://www.tutorialspoint.com/http/http_responses.htm
 
+
+/* another example :
+
+200 OK
+Access-Control-Allow-Origin: *
+Connection: Keep-Alive
+Content-Encoding: gzip
+Content-Type: text/html; charset=utf-8
+Date: Mon, 18 Jul 2016 16:06:00 GMT
+Etag: "c561c68d0ba92bbeb8b0f612a9199f722e3a621a"
+Keep-Alive: timeout=5, max=997
+Last-Modified: Mon, 18 Jul 2016 02:36:04 GMT
+Server: Apache
+Set-Cookie: mykey=myvalue; expires=Mon, 17-Jul-2017 16:06:00 GMT; Max-Age=31449600; Path=/; secure
+Transfer-Encoding: chunked
+Vary: Cookie, Accept-Encoding
+X-Backend-Server: developer2.webapp.scl3.mozilla.com
+X-Cache-Info: not cacheable; meta data too large
+X-kuma-revision: 1085259
+x-frame-options: DENY
+https://gmlwjd9405.github.io/2019/01/28/http-header-types.html
+
+*/
+
+/* Response status codde
+
+
+https://developer.mozilla.org/ko/docs/Web/HTTP/Status
+*/
