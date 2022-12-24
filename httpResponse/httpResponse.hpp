@@ -8,9 +8,11 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <sstream>
 
 class TimeStamp;
 class StatusLine;
+class Request; // defined in request class
 
 // [!] HttpResInfo 구조체를 밖에서 인자로 넣어주고 리턴해주려면 전체 헤더에서 구조체 타입을 선언 해줘야 함. 회의 필요.
 typedef  struct HttpResInfo
@@ -34,13 +36,12 @@ typedef  struct HttpResInfo
 class HttpResponse
 {
 	private:
-		HttpResInfo &info;
-		std::map<std::string, std::string> header;
+		HttpResInfo &_info;
+		std::map<std::string, std::string> _header;
 
 	public:
 		/* cannonical form */
-		HttpResponse();
-		HttpResponse(HttpReqInfo &info, std::string resourceLocation); //take reference
+		HttpResponse(Request &reqInfo); //take reference
 		~HttpResponse();
 		HttpResponse(HttpResponse const &obj);
 		HttpResponse &operator=(HttpResponse const &obj);
@@ -50,7 +51,9 @@ class HttpResponse
 
 		/* response to be transmitted to the client */
 		HttpResInfo getResponseInfo();
-
+	public:
+		/* verify resource location accessible */
+		bool accessResource(std::string url);
 		/* send response */
 		void sendResToClient(); // [!] client에 response (인코딩된 파일 및 헤더, html)를 보내는(write()/send()) 역할은 Connection 객체가 하는게 좋을지 회의 필요
 };
@@ -64,9 +67,9 @@ class HttpResponse
 class StatusLine
 {
 	private:
-		std::string httpVersion; // HTTP/1.1
-		int statusCode; // 200, 300, 404 etc..
-		std::string reasonPhrase; // Not Found, Bad Request ...
+		std::string _httpVersion; // HTTP/1.1
+		int _statusCode; // 200, 300, 404 etc..
+		std::string _reasonPhrase; // Not Found, Bad Request ...
 
 	public:
 		/* cannonical */
@@ -78,10 +81,9 @@ class StatusLine
 		void setHttpVersion(std::string httpVersion);
 		void setStatusCode(int statusCode);
 		void setReasonPhrase(std::string reasonPhrase);
-		std::string getHttpVersion();
+		std::string getHttpVersion() const;
 		int getStatusCode() const;
 		std::string getReasonPhrase() const;
-		std::string getStatusLineString() const;
 };
 
 class TimeStamp
@@ -111,7 +113,7 @@ class TimeStamp
 		void setMin(int min);
 		void setSec(int sec);
 		void setTimeZone(std::string timeZone);
-		std::string const getTimeStampString() const;
+		std::string const makeTimeStampString() const;
 };
 
 #endif
@@ -123,6 +125,7 @@ class TimeStamp
 /*** Additional Info  ***************************************/
 /************************************************************/
 
+
 /*
 string		version				Request 객체를 참고해도 되지 않을까 하는 생각이 듦
 	int		status_code			상태코드(200, 404, etc…)
@@ -133,6 +136,8 @@ string		version				Request 객체를 참고해도 되지 않을까 하는 생각
 	string		statusText(int status)		returns status text (OK, Bad request, etc…)
 	void		sendResponse			응답 메세지를 송신
 */
+
+
 
 /*
 TYPICAL TYPE OF HTTP RESPONSE :
@@ -153,8 +158,8 @@ Content-Type: text/html
 // ref : https://www.tutorialspoint.com/http/http_responses.htm
 
 
-/* another example :
 
+/* another example :
 200 OK
 Access-Control-Allow-Origin: *
 Connection: Keep-Alive
@@ -173,11 +178,45 @@ X-Cache-Info: not cacheable; meta data too large
 X-kuma-revision: 1085259
 x-frame-options: DENY
 https://gmlwjd9405.github.io/2019/01/28/http-header-types.html
-
 */
+
 
 /* Response status codde
-
-
 https://developer.mozilla.org/ko/docs/Web/HTTP/Status
 */
+
+
+
+//defined in request class .. to be replaced by Request.hpp
+class Request {
+public:
+	std::string	getOrig();
+	std::string	getHead();
+	std::string	getBody();
+	std::string	getControl();
+	std::string	getTarget();
+	std::string	getVersion();
+	int 		getMethod();
+	void 		setOrig(std::string &orig);
+	void		setHead(std::string &head);
+	void 		setBody(std::string &body);
+	void		setControl(std::string &control);
+	void 		setTarget(const std::string &target);
+	void		setVersion(const std::string &version);
+	void 		setMethod(int method);
+
+	Request();
+	~Request();
+	Request(const Request &orig);
+	Request& operator=(const Request &orig);
+
+private:
+	std::string	_orig;
+	std::string	_control; // no need?
+	std::string	_head;
+	std::string	_body;
+	std::string	_target;
+	std::string	_version; // upper class might have it
+	int			_method; // GET POST DELETE
+
+};
