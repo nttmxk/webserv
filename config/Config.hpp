@@ -1,15 +1,8 @@
 #ifndef CONFIG_HPP
 # define CONFIG_HPP
-# include <iostream>
-# include <string>
-# include <fstream>
-# include <algorithm>
-# include <stdexcept>
-# include <vector>
-# include <map>
-#include <stdio.h>
-#include <sstream>
+
 #include "Config_struct.hpp"
+#include "BaseServer.hpp"
 // using namespace std;
 
 
@@ -17,46 +10,7 @@
 	author	:kbaek
 	date 	:2022.12.10
 */
-class BaseServer
-{
-public:
 
-    BaseServer(){
-		BServer.serverName = "";
-		BServer.host = "";
-		BServer.port = "";
-		BServer.maxRequestBodySize = -1;
-	};
-	BaseServer(const std::string& src) {};
-    ~BaseServer() {};
-    
-    //  Access Location
-	// Location& operator[](const std::string& key);
-	// const std::map<std::string, Location>& getLocations() const;
-
-    // //  Access Attribution
-	// const std::vector<std::string>& BServer(const std::string& key) const;
-
-	// bool is_exist(const std::string& key, std::string) const;
-	//	data to std::string
-	// std::string id();
-	// std::string str(size_t tab_size);
-
-	void setBServer(std::string fo, std::string str);
-
-	// template<typename T>
-	void setBlcation(std::string fo,  Location location);
-
-	void setError(std::string str, std::vector<int> v);
-	
-	template <typename T>
-	std::string printPair8(const T &iterator, bool nl);
-
-protected:
-    ServerInfo 							BServer;
-    std::map< std::string, Location >	BLocation;
-	bool								redirect;
-};
 
 using vector_int_type = std::vector<int>;
 std::ostream& operator << (std::ostream& os, const vector_int_type& vect) {
@@ -65,45 +19,52 @@ std::ostream& operator << (std::ostream& os, const vector_int_type& vect) {
     return os;
 }
 
+// void BaseServer::printStruct()
+// {
+// 	std::cout << "ServerInfo : \n";
+// 	std::cout << "serverName = " << BServer.serverName << "\nhost= " << BServer.host << "\nport = " << BServer.port << "\nmaxRequestBodySize = " << BServer.maxRequestBodySize << std::endl;
 
-void BaseServer::setBServer(std::string fo, std::string str)
-{
-	if (fo == "h")
-		BServer.host = str;
-	else if (fo == "p")
-		BServer.port = str;
-	else if (fo == "s")
-	{
-		std::cout << "str = [" << str << "]" << std::endl;
-		BServer.serverName = str;
-	}
-	// else
-	// 	BServer.maxRequestBodySize = atoi(str);
-}
-
-// template<typename T>
-void BaseServer::setBlcation(std::string fo,  Location location)
-{
-	BLocation.insert(std::make_pair(fo, location));
-}
-
-void BaseServer::setError(std::string str, std::vector<int> v)
-{
-	BServer.errorPages.insert(std::make_pair(str, v));
-	
-    //  for (auto& item : BServer.errorPages)
-    //     std::cout << item.first << " is: " << item.second << std::endl;
-	
-}
+// 	std::cout << "location : \n";
+// 	 std::map< std::string, Location>::iterator it;
+// 	for (it = BLocation.begin(); it != BLocation.end(); it++)
+// 		std::cout << it->first << ' ' <<it->second << std::endl;
+// }
 
 struct Config_base
 {
 	Config_base() { numOfServer = 0;}
+	std::vector<BaseServer> getConfigBase();
+	int	getNumOfServer();
+	// print_config_base(std::vector<BaseServer> 	base, int numOfServer)
+	// {
+	// 	for (int i = 0; numOfServer > i; i++)
+	// 	{
+	// 		std::cout << "ServerInfo : \n";
+	// 		base.data
+	// 	}
+	// }
 protected:
 	std::vector<BaseServer> 		base;
 	int								numOfServer;
 };
+std::vector<BaseServer> Config_base::getConfigBase()
+{
+	return this->base;
+}
+int	Config_base::getNumOfServer()
+{
+	return this->numOfServer;
+}
+// void Config_base::printStruct()
+// {
+// 	std::cout << "ServerInfo : \n";
+// 	std::cout << "serverName = " << BServer.serverName << "\nhost= " << BServer.host << "\nport = " << BServer.port << "\nmaxRequestBodySize = " << BServer.maxRequestBodySize << std::endl;
 
+// 	std::cout << "location : \n";
+// 	 std::map< std::string, Location>::iterator it;
+// 	for (it = BLocation.begin(); it != BLocation.end(); it++)
+// 		std::cout << it->first << ' ' <<it->second << std::endl;
+// }
 
 
 
@@ -205,7 +166,7 @@ void	Config::configParse()
 				exit (1);
 			}
 			serverInit(i - j, j);
-			std::cout << file[i] << std::endl;
+			// std::cout << file[i] << std::endl;
 		}
 		else {
 				std::cerr << "Error: Server block syntax error" << std::endl;
@@ -286,7 +247,7 @@ void	Config::serverInit(int start, int end)
 				std::cerr << "Error: Location block / syntax error" << std::endl;
 				exit (1);
 			}
-			 int flag;
+			int flag;
 			// = (file[++start] != "}");
 			// // int i = flag == true ? 1 : 0;
 			// std::cout << "i === " << i << std::endl;
@@ -345,9 +306,7 @@ void	Config::serverInit(int start, int end)
 							location.autoListing = true;
 					}
 					else if (tmp == "return")
-					{
 						location.returnRoot = file[start].substr(sub + 1);
-					}
 					else
 					{
 						std::cerr << "Error: Location block has wrong syntax error" << std::endl;
@@ -369,7 +328,22 @@ void	Config::serverInit(int start, int end)
 		}
 		else if (file[start].find("cgi ") != std::string::npos)
 		{
-
+			int flag;
+			while (flag = (file[++start] != "}"))
+			{
+				
+			}
+			if (flag)
+			{
+				std::cerr << "Error: Location block {  } syntax error" << std::endl;
+				exit (1);
+			}
+		}
+		else if (file[start] != "server {" && file[start] != "}")
+		{
+			std::cout <<  "wrong ["<<file[start] << "]" << std::endl;
+			std::cerr << "Error: Config block syntax key error" << std::endl;
+			exit (1);
 		}
 		// std::cout << "start = " << start<< "start + end = "<< start + end<< std::endl;
 	}
