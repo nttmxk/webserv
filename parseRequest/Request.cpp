@@ -13,10 +13,10 @@ Request& Request::operator=(const Request &orig) {
 std::string Request::getOrig() { return (_orig); }
 std::string Request::getHead() { return (_head); }
 std::string Request::getBody() { return (_body); }
-std::string	Request::getControl() { return (_control); }
 std::string	Request::getTarget() { return (_target); }
 std::string	Request::getVersion() { return (_version); }
 int 		Request::getMethod() { return (_method); }
+int 		Request::getStatus() { return (_status); }
 
 void 		Request::setOrig(std::string &orig) {
 	_orig = orig;
@@ -30,10 +30,6 @@ void		Request::setBody(std::string &body) {
 	_body = body;
 }
 
-void		Request::setControl(std::string &control) {
-	_control = control;
-}
-
 void 		Request::setTarget(const std::string &target) {
 	_target = target;
 }
@@ -44,4 +40,8 @@ void		Request::setVersion(const std::string &version) {
 
 void 		Request::setMethod(int method) {
 	_method = method;
+}
+
+void 		Request::updateStatus(int status) {
+	_status = status;
 }

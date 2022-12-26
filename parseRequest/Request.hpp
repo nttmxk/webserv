@@ -1,6 +1,9 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 # include <iostream>
+# include <map>
+# define SP ' '
+# define CRLF "\r\n"
 
 /** Request class
  * author: jinoh
@@ -8,20 +11,26 @@
  */
 class Request {
 public:
+	enum {
+		GET = 0,
+		POST,
+		DELETE
+	};
+	map<std::string, std::string>	header; // what if there's more than one fieldValue ?
 	std::string	getOrig();
 	std::string	getHead();
 	std::string	getBody();
-	std::string	getControl();
 	std::string	getTarget();
 	std::string	getVersion();
 	int 		getMethod();
+	int 		getStatus();
 	void 		setOrig(std::string &orig);
 	void		setHead(std::string &head);
 	void 		setBody(std::string &body);
-	void		setControl(std::string &control);
 	void 		setTarget(const std::string &target);
 	void		setVersion(const std::string &version);
 	void 		setMethod(int method);
+	void 		updateStatus(int status);
 
 	Request();
 	~Request();
@@ -30,11 +39,11 @@ public:
 
 private:
 	std::string	_orig;
-	std::string	_control; // no need?
-	std::string	_head;
+	std::string	_head; // no need?
 	std::string	_body;
 	std::string	_target;
 	std::string	_version; // upper class might have it
+	int			_status;
 	int			_method; // GET POST DELETE
 
 };
@@ -44,6 +53,7 @@ private:
  */
 int		printError(std::string message);
 void	printRequest(Request &request);
+int		errorStatus(std::string message, int status);
 
 /*
  * parse.cpp

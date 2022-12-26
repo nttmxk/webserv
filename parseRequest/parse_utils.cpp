@@ -6,6 +6,12 @@ int	printError(std::string message)
 	return (-1);
 }
 
+int	errorStatus(std::string message, int status)
+{
+	updateStatus(status);
+	return printError(message);
+}
+
 void	printRequest(Request &request)
 {
 	std::cout <<
