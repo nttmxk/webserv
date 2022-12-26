@@ -43,6 +43,10 @@ public:
 	// std::string str(size_t tab_size);
 
 	void setBServer(std::string fo, std::string str);
+
+	// template<typename T>
+	void setBlcation(std::string fo,  Location location);
+
 	void setError(std::string str, std::vector<int> v);
 	
 	template <typename T>
@@ -75,7 +79,12 @@ void BaseServer::setBServer(std::string fo, std::string str)
 	}
 	// else
 	// 	BServer.maxRequestBodySize = atoi(str);
+}
 
+// template<typename T>
+void BaseServer::setBlcation(std::string fo,  Location location)
+{
+	BLocation.insert(std::make_pair(fo, location));
 }
 
 void BaseServer::setError(std::string str, std::vector<int> v)
@@ -281,39 +290,63 @@ void	Config::serverInit(int start, int end)
 			// = (file[++start] != "}");
 			// // int i = flag == true ? 1 : 0;
 			// std::cout << "i === " << i << std::endl;
+
+			Location location;
+			location.root = "";
+			location.maxBody = 9000;
+			location.returnType = -1;
+			location.autoListing = false;
+			location.returnRoot = "";
 			while (flag = (file[++start] != "}"))
 			{
 				if ((sub = file[start].find(" ")) != std::string::npos)
 				{
 					tmp = file[start].substr(0, sub);
-					// std::cout <<"tmp = [" << tmp << "]" << std::endl;
+					std::cout <<"tmp = [" << tmp << "]" << std::endl;
 					if (tmp == "root")
-					{
-
-					}
+						location.root = file[start].substr(sub + 1);
 					else if (tmp == "method")
 					{
-
+						std::vector<std::string> methods;
+						std::string subS =  file[start].substr(sub + 1);
+						std::stringstream ss(subS);
+						std::string temp;
+						while (getline(ss, temp, ' '))
+							methods.push_back(temp);
+						location.Methods = methods;
 					}
 					else if (tmp == "index")
 					{
-
+						std::vector<std::string> methods;
+						std::string subS =  file[start].substr(sub + 1);
+						std::stringstream ss(subS);
+						std::string temp;
+						while (getline(ss, temp, ' '))
+							methods.push_back(temp);
+						location.index = methods;
 					}
 					else if (tmp == "max_body")
 					{
-
+						int i;
+						std::stringstream ssInt(file[start].substr(sub + 1));
+						ssInt >> i;
+						location.maxBody = i;
 					}
 					else if (tmp == "returnType")
 					{
-
+						int i;
+						std::stringstream ssInt(file[start].substr(sub + 1));
+						ssInt >> i;
+						location.returnType = i;
 					}
-					else if (tmp == "autoListing")
+					else if (tmp == "autoindex")
 					{
-
+						if (file[start].substr(sub + 1) == "on")
+							location.autoListing = true;
 					}
 					else if (tmp == "return")
 					{
-
+						location.returnRoot = file[start].substr(sub + 1);
 					}
 					else
 					{
@@ -332,9 +365,7 @@ void	Config::serverInit(int start, int end)
 				std::cerr << "Error: Location block {  } syntax error" << std::endl;
 				exit (1);
 			}
-
-			
-
+			tmpServer.setBlcation(str, location);
 		}
 		else if (file[start].find("cgi ") != std::string::npos)
 		{
