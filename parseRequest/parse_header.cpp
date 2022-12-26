@@ -26,7 +26,7 @@ int	parseHeader(Request &request, size_t &prev)
 static int	checkHeader(std::string &mHeader)
 {
 	size_t	pos_nl_prev;
-	size_t	pos_nl_next
+	size_t	pos_nl_next;
 	size_t	pos_colon;
 	std::string fieldName;
 	std::string fieldValue;
@@ -46,7 +46,7 @@ static int	checkHeader(std::string &mHeader)
 			return (-1);
 		fieldName = mHeader.substr(pos_nl_prev + 1, pos_colon - pos_nl_prev - 1);
 		fieldValue = mHeader.substr(pos_colon + 1, pos_nl_next - pos_colon - 2); // whitespace ?
-		header[fieldName].push_back(fieldValue);
+//		header[fieldName] = fieldValue;
 		pos_nl_prev = pos_nl_next;
 	}
 	return (0);

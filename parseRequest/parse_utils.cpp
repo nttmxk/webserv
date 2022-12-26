@@ -1,22 +1,21 @@
 #include "Request.hpp"
 
-int	printError(std::string message)
+int	printError(std::string &message)
 {
 	std::cout << message;
 	return (-1);
 }
 
-int	errorStatus(std::string message, int status)
+void	Request::errorStatus(std::string message, int status, int pStatus)
 {
-	updateStatus(status);
-	return printError(message);
+	updateStatus(status, pStatus);
+	std::cout << message;
 }
 
 void	printRequest(Request &request)
 {
 	std::cout <<
 			  "[Request Line]" <<
-			  "\n" << request.getControl() <<
 			  "\nMethod:" << request.getMethod() <<
 			  "\nTarget:" << request.getTarget() <<
 			  "\nVersion:" << request.getVersion() <<

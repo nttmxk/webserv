@@ -1,7 +1,6 @@
 #include "Request.hpp"
 
 static int	checkWhitespace(std::string &mControl);
-static int	checkVersion(std::string version);
 static int	parseControl(Request &request, std::string &mControl, std::string method);
 
 int	parseStartLine(Request &request, size_t &pos)
@@ -48,9 +47,13 @@ static int parseControl(Request &request, std::string &mControl, std::string met
 	if (pos == std::string::npos)
 		return errorStatus("# Control Line Error <" + method + "/Npos>\n", 400);
 	request.setTarget(mControl.substr(len_method + 1, pos - len_method - 1)); // Status 414 need to be checked
-	if (checkVersion(mControl.substr(pos + 1)) < 0)
-		return printError("# Control Line Error <" + method + "/Version>\n");
+
 	request.setVersion(mControl.substr(pos + 1));
+	request.checkVersion();
+
+//	if (checkVersion(mControl.substr(pos + 1)) < 0)
+//		return printError("# Control Line Error <" + method + "/Version>\n");
+//	request.setVersion(mControl.substr(pos + 1));
 	return (0);
 }
 
@@ -72,8 +75,11 @@ static int checkWhitespace(std::string &mControl)
 	return (0);
 }
 
-static int checkVersion(std::string version)
+int Request::checkVersion()
 {
+	std::string version;
+
+	version = getVersion();
 	if (version.find(SP) != std::string::npos || version.size() != 8 || version.compare(0, 7, "HTTP/1.") != 0)
 	{
 		updateStatus(400); // Bad Request

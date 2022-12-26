@@ -9,14 +9,22 @@
  * author: jinoh
  * date: 2022.12.09
  */
+enum {
+	GET = 0,
+	POST,
+	DELETE
+};
+
 class Request {
 public:
 	enum {
-		GET = 0,
-		POST,
-		DELETE
+		pRequest = 0
+		pHeader,
+		pBody,
+		pComplete,
+		pError
 	};
-	map<std::string, std::string>	header; // what if there's more than one fieldValue ?
+	std::map<std::string, std::string>	header; // what if there's more than one fieldValue ?
 	std::string	getOrig();
 	std::string	getHead();
 	std::string	getBody();
@@ -30,7 +38,16 @@ public:
 	void 		setTarget(const std::string &target);
 	void		setVersion(const std::string &version);
 	void 		setMethod(int method);
-	void 		updateStatus(int status);
+
+	int			parseMessage();
+
+	int			parseStartLine(size_t &pos);
+	int			checkVersion();
+	int			checkWhitespace(std::string &mControl);
+	void		parseControl(std::string &mControl, std::string method);
+
+	int			parseHeader(size_t &prev);
+	void		parseBody(size_t &prev);
 
 	Request();
 	~Request();
@@ -44,7 +61,11 @@ private:
 	std::string	_target;
 	std::string	_version; // upper class might have it
 	int			_status;
+	int 		_pStatus;
 	int			_method; // GET POST DELETE
+
+	void 		updateStatus(int status, int pStatus);
+
 
 };
 

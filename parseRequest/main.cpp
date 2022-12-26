@@ -28,22 +28,9 @@ int main()
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n"
 			"<string xmlns=\"http://clearforest.com/\">string</string>";
 	request.setOrig(mOrig);
+	request.parseMessage();
+	if (request.getStatus() == 200)
+		request.printRequest();
 
-	if (parseMessage(request) == 0)
-		printRequest(request);
-
-	return (0);
-}
-
-int parseMessage(Request &request)
-{
-	size_t	pos;
-
-	if (parseStartLine(request, pos) < 0)
-		return (-1);
-	if (parseHeader(request, pos) < 0)
-		return (-1);
-	if (parseBody(request, pos) < 0)
-		return (-1);
 	return (0);
 }
