@@ -30,13 +30,14 @@ public:
 
 	void setBServer(std::string fo, std::string str);
 	void setBlcation(std::string fo,  Location location);
+	void setBCgi(std::string fo, CgiConfig cgi);
 	void setError(std::string str, std::vector<int> v);
+
 
 	bool getRedirect();
 	ServerInfo getBServer();
+	std::map< std::string, CgiConfig > getBCgi();
 	std::map< std::string, Location > getBLocation();
-
-	// void printStruct();
 	
 	template <typename T>
 	std::string printPair8(const T &iterator, bool nl);
@@ -44,6 +45,7 @@ public:
 protected:
     ServerInfo 							BServer;
     std::map< std::string, Location >	BLocation;
+	std::map< std::string, CgiConfig >		BCgi;
 	bool								redirect;
 };
 
@@ -58,11 +60,8 @@ void BaseServer::setBServer(std::string fo, std::string str)
 		std::cout << "str = [" << str << "]" << std::endl;
 		BServer.serverName = str;
 	}
-	// else
-	// 	BServer.maxRequestBodySize = atoi(str);
 }
 
-// template<typename T>
 void BaseServer::setBlcation(std::string fo,  Location location)
 {
 	BLocation.insert(std::make_pair(fo, location));
@@ -71,16 +70,23 @@ void BaseServer::setBlcation(std::string fo,  Location location)
 void BaseServer::setError(std::string str, std::vector<int> v)
 {
 	BServer.errorPages.insert(std::make_pair(str, v));
-	
-    //  for (auto& item : BServer.errorPages)
-    //     std::cout << item.first << " is: " << item.second << std::endl;
-	
+}
+
+void BaseServer::setBCgi(std::string fo, CgiConfig cgi)
+{
+	BCgi.insert(std::make_pair(fo, cgi));
 }
 
 ServerInfo BaseServer::getBServer()
 {
 	return this->BServer;
 }
+
+std::map< std::string, CgiConfig > BaseServer::getBCgi()
+{
+	return this->BCgi;
+}
+
 std::map< std::string, Location > BaseServer::getBLocation()
 {
 	return this->BLocation;

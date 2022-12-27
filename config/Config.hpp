@@ -24,16 +24,7 @@ std::ostream& operator << (std::ostream& os, const vector_str_type& vect) {
         os << ' ' << i;
     return os;
 }
-// void BaseServer::printStruct()
-// {
-// 	std::cout << "ServerInfo : \n";
-// 	std::cout << "serverName = " << BServer.serverName << "\nhost= " << BServer.host << "\nport = " << BServer.port << "\nmaxRequestBodySize = " << BServer.maxRequestBodySize << std::endl;
 
-// 	std::cout << "location : \n";
-// 	 std::map< std::string, Location>::iterator it;
-// 	for (it = BLocation.begin(); it != BLocation.end(); it++)
-// 		std::cout << it->first << ' ' <<it->second << std::endl;
-// }
 
 struct Config_base
 {
@@ -41,14 +32,7 @@ struct Config_base
 	std::vector<BaseServer> getConfigBase();
 	int	getNumOfServer();
 	void print_config();
-	// print_config_base(std::vector<BaseServer> 	base, int numOfServer)
-	// {
-	// 	for (int i = 0; numOfServer > i; i++)
-	// 	{
-	// 		std::cout << "ServerInfo : \n";
-	// 		base.data
-	// 	}
-	// }
+
 protected:
 	std::vector<BaseServer> 		base;
 	int								numOfServer;
@@ -59,16 +43,18 @@ void Config_base::print_config()
 	BaseServer baseS;
 	ServerInfo tmpserver;
 	std::map< std::string, Location >	tmplocation;
-
+	std::map< std::string, CgiConfig >	tmpcgi;
 	std::cout << base.size() <<std::endl;
 	std::vector<BaseServer>::iterator it;
 	for (it = base.begin(); it != base.end(); it++)
 	{
 		tmpserver = it->getBServer();
 		tmplocation = it->getBLocation();
+		tmpcgi = it->getBCgi();
 
 		std::cout << "\n\n*** ServerInfo *** \n";
-		std::cout << "serverName = [" << tmpserver.serverName << "]\nhost= [" << tmpserver.host << "]\nport = [" << tmpserver.port << "]\nmaxRequestBodySize = [" << tmpserver.maxRequestBodySize << "]\n"<<std::endl;
+		std::cout << "serverName = [" << tmpserver.serverName << "]\nhost= [" << tmpserver.host << "]\nport = [" << tmpserver.port << \
+				"]\nmaxRequestBodySize = [" << tmpserver.maxRequestBodySize << "]\n"<<std::endl;
 		std::cout << "\n** Error page ** \n";
 		for (auto& item : tmpserver.errorPages)
         	std::cout << "key = [" << item.first << "] value = [" << item.second << "]" <<std::endl;
@@ -91,7 +77,18 @@ void Config_base::print_config()
 			std::cout << "	returnRoot = [" << tmpL.returnRoot << "]\n";
 			std::cout << "	methods = [" << tmpL.Methods << "]\n";
 			std::cout << "	index = [" << tmpL.index << "]\n";
-			//"] value = [" << itemL.second << "]" <
+		}
+
+		std::cout << "\n** Cgi Config ** \n";
+		for (auto& itemC : tmpcgi)
+		{
+        	std::cout << "\nkey = [" << itemC.first << "]"<< std::endl;
+			CgiConfig tmpC;
+			tmpC = itemC.second;
+			std::cout << "value = \n";
+			std::cout << "	root = [" << tmpC.root << "]\n";
+			std::cout << "	methods = [" << tmpC.Methods << "]\n";
+
 		}
 	}
 
@@ -105,18 +102,6 @@ int	Config_base::getNumOfServer()
 {
 	return this->numOfServer;
 }
-// void Config_base::printStruct()
-// {
-// 	std::cout << "ServerInfo : \n";
-// 	std::cout << "serverName = " << BServer.serverName << "\nhost= " << BServer.host << "\nport = " << BServer.port << "\nmaxRequestBodySize = " << BServer.maxRequestBodySize << std::endl;
-
-// 	std::cout << "location : \n";
-// 	 std::map< std::string, Location>::iterator it;
-// 	for (it = BLocation.begin(); it != BLocation.end(); it++)
-// 		std::cout << it->first << ' ' <<it->second << std::endl;
-// }
-
-
 
 class Config : public Config_base
 {
@@ -145,7 +130,7 @@ private:
 	std::vector<std::string> file;
 };
 
-// std::ostream &operator<<(std::ostream &ost, const Config &conf);
+std::ostream &operator<<(std::ostream &ost, const Config &conf);
 
 Config::Config()
 {}
@@ -216,14 +201,12 @@ void	Config::configParse()
 				exit (1);
 			}
 			serverInit(i - j, j);
-			// std::cout << file[i] << std::endl;
 		}
 		else {
 				std::cerr << "Error: Server block syntax error" << std::endl;
 				exit (1);
 		}
 	}
-	std::cout << "server num = " << getNumOfServer() << std::endl;
 	print_config();
 
 }
@@ -287,7 +270,6 @@ void	Config::serverInit(int start, int end)
 			size_t q;
 			std::string str;
 			std::string tmp;
-			Location tmpLo;
 			
 			if ((q = file[start].find(" {")) == std::string::npos)
 			{
@@ -301,10 +283,6 @@ void	Config::serverInit(int start, int end)
 				exit (1);
 			}
 			int flag;
-			// = (file[++start] != "}");
-			// // int i = flag == true ? 1 : 0;
-			// std::cout << "i === " << i << std::endl;
-
 			Location location;
 			location.root = "";
 			location.maxBody = 9000;
@@ -316,7 +294,6 @@ void	Config::serverInit(int start, int end)
 				if ((sub = file[start].find(" ")) != std::string::npos)
 				{
 					tmp = file[start].substr(0, sub);
-					std::cout <<"tmp = [" << tmp << "]" << std::endl;
 					if (tmp == "root")
 						location.root = file[start].substr(sub + 1);
 					else if (tmp == "method")
@@ -381,16 +358,55 @@ void	Config::serverInit(int start, int end)
 		}
 		else if (file[start].find("cgi ") != std::string::npos)
 		{
+			sub = file[start].find(" ") + 1;
+			size_t q;
+			std::string str;
+			std::string tmp;
+			
+			if ((q = file[start].find(" {")) == std::string::npos)
+			{
+				std::cerr << "Error: Location block { } syntax error" << std::endl;
+				exit (1);
+			}
+			str = file[start].substr(sub, q - sub);
+			if(str.empty())
+			{
+				std::cerr << "Error: Location block / syntax error" << std::endl;
+				exit (1);
+			}
+			
 			int flag;
+			CgiConfig cgi;
 			while (flag = (file[++start] != "}"))
 			{
-				
+				if ((sub = file[start].find(" ")) != std::string::npos)
+				{
+					tmp = file[start].substr(0, sub);
+					if (tmp == "root")
+						cgi.root = file[start].substr(sub + 1);
+					else if (tmp == "method")
+					{
+						std::vector<std::string> methods;
+						std::string subS =  file[start].substr(sub + 1);
+						std::stringstream ss(subS);
+						std::string temp;
+						while (getline(ss, temp, ' '))
+							methods.push_back(temp);
+						cgi.Methods = methods;
+					}
+				}
+				else
+				{
+					std::cerr << "Error: Location block key value syntax error" << std::endl;
+					exit (1);
+				}
 			}
 			if (flag)
 			{
 				std::cerr << "Error: Location block {  } syntax error" << std::endl;
 				exit (1);
 			}
+			tmpServer.setBCgi(str, cgi);
 		}
 		else if (file[start] != "server {" && file[start] != "}")
 		{
@@ -398,7 +414,6 @@ void	Config::serverInit(int start, int end)
 			std::cerr << "Error: Config block syntax key error" << std::endl;
 			exit (1);
 		}
-		// std::cout << "start = " << start<< "start + end = "<< start + end<< std::endl;
 	}
 	base.push_back(tmpServer);
 	numOfServer += 1;
@@ -421,26 +436,6 @@ void Config::printV(std::vector <std::string> const &a) {
 		std::cout << a.at(i) << '\n';
 	std::cout << "\n\n\n";
 }
-
-
-// int	check_bracket(int type, int quotat)
-// {
-// 	if (type == DOUBLE)
-// 	{
-// 		if (quotat == 0)
-// 			quotat = DOUBLE;
-// 		else if (quotat == DOUBLE)
-// 			quotat = 0;
-// 	}
-// 	else if (type == SINGLE)
-// 	{
-// 		if (quotat == 0)
-// 			quotat = SINGLE;
-// 		else if (quotat == SINGLE)
-// 			quotat = 0;
-// 	}
-// 	return (quotat);
-// }
 
 
 const char	*Config::FileNotFoundException::what() const throw(){

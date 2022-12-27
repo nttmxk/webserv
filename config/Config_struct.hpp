@@ -9,13 +9,15 @@
 
 #include "Config.hpp"
 
+struct CgiConfig
+{
+	std::string root;
+	std::vector<std::string> Methods;
+};
+
+
 struct Location
 {
-	// typedef bool Autoindex_type;
-  	// const Autoindex_type off = false;
-  	// const Autoindex_type on = true;
-    // typedef Autoindex_type Autoindex;
-
 	std::string root;
 	std::vector<std::string> Methods;
 	std::vector<std::string> index;
@@ -23,7 +25,6 @@ struct Location
 	int returnType;
 	bool autoListing;
 	std::string returnRoot;
-
 };
 
 
