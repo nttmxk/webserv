@@ -35,6 +35,7 @@ struct Config_base
 	Config_base() { numOfServer = 0;}
 	std::vector<BaseServer> getConfigBase();
 	int	getNumOfServer();
+	void print_config();
 	// print_config_base(std::vector<BaseServer> 	base, int numOfServer)
 	// {
 	// 	for (int i = 0; numOfServer > i; i++)
@@ -47,6 +48,31 @@ protected:
 	std::vector<BaseServer> 		base;
 	int								numOfServer;
 };
+
+void Config_base::print_config()
+{
+	BaseServer baseS;
+	ServerInfo tmpserver;
+	std::map< std::string, Location >	tmplocation;
+
+	std::cout << base.size() <<std::endl;
+	std::vector<BaseServer>::iterator it;
+	for (it = base.begin(); it != base.end(); it++)
+	{
+		tmpserver = it->getBServer();
+		tmplocation = it->getBLocation();
+
+		std::cout << "\nServerInfo : \n";
+		std::cout << "serverName = " << tmpserver.serverName << "\nhost= " << tmpserver.host << "\nport = " << tmpserver.port << "\nmaxRequestBodySize = " << tmpserver.maxRequestBodySize << std::endl;
+		
+		for (auto& item : tmpserver.errorPages)
+        	std::cout << item.first << " is: " << item.second << std::endl;
+
+
+	}
+	
+}
+
 std::vector<BaseServer> Config_base::getConfigBase()
 {
 	return this->base;
@@ -173,6 +199,9 @@ void	Config::configParse()
 				exit (1);
 		}
 	}
+	std::cout << "server num = " << getNumOfServer() << std::endl;
+	print_config();
+
 }
 
 void	Config::serverInit(int start, int end)
@@ -347,6 +376,7 @@ void	Config::serverInit(int start, int end)
 		}
 		// std::cout << "start = " << start<< "start + end = "<< start + end<< std::endl;
 	}
+	base.push_back(tmpServer);
 	numOfServer += 1;
 	/* checkfillup();
 		1. post is digit
