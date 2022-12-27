@@ -45,8 +45,9 @@ void 		Request::setMethod(int method) {
 	_method = method;
 }
 
-void 		Request::updateStatus(int status) {
+void 		Request::updateStatus(int status, int pStatus) {
 	_status = status;
+	_pStatus = pStatus;
 }
 
 void	Request::parseMessage()
@@ -70,7 +71,7 @@ void	Request::parseStartLine(size_t &pos)
 		return errorStatus("# Control Line Error <Npos>\n", 400, pError);
 
 	mControl = _orig.substr(0, pos);
-	if (checkWhitespace(mControl) < 0)
+	if (std::count(mControl.begin(), mControl.end(),' ') != 2)
 		return errorStatus("# Control Line Error <WhiteSpace>\n", 400, pError);
 	if (mControl.length() < 14) // The shortest message "GET / HTTP/1.0" is 14 characters
 		return errorStatus("# Control Line Error <LENGTH>\n", 400, pError);
@@ -78,9 +79,9 @@ void	Request::parseStartLine(size_t &pos)
 	if (mControl[0] == 'G')
 		return parseControl(mControl, "GET");
 	else if (mControl[0] == 'P')
-		return parseControl(request, mControl, "POST");
+		return parseControl(mControl, "POST");
 	else if (mControl[0] == 'D')
-		return parseControl(request, mControl, "DELETE");
+		return parseControl(mControl, "DELETE");
 	else
 		return errorStatus("# Control Line Error\n", 501, pError); // Not Implemented
 }
@@ -110,24 +111,6 @@ void Request::parseControl(std::string &mControl, std::string method)
 		_pStatus = pHeader;
 }
 
-int Request::checkWhitespace(std::string &mControl)
-{
-	size_t	pos;
-	int		count;
-
-	pos = -1;
-	count = 0;
-	while (1) {
-		pos = mControl.find(SP, pos + 1);
-		if (pos == std::string::npos)
-			break ;
-		count++;
-	}
-	if (count != 2)
-		return (-1);
-	return (0);
-}
-
 void	Request::checkVersion()
 {
 	std::string version;
@@ -141,7 +124,86 @@ void	Request::checkVersion()
 
 
 
-void	Request::parseBody(size_t &prev)
+void	Request::parseHeader(size_t &prev)
+{
+	std::string	mOrig;
+	std::string	mHeader;
+	size_t		next;
+
+	mOrig = getOrig();
+	if (mOrig[prev + 2] == SP)
+		return errorStatus("# Header Line Error <WhiteSpace>\n", 400, pError);
+	next = mOrig.find("\r\n\r\n", prev + 2);
+	if (next == std::string::npos)
+		return errorStatus("# Header Line Error <Npos>\n", 400, pError);
+	mHeader = mOrig.substr(prev + 2, next - prev);
+	setHead(mHeader);
+	checkHeader();
+	prev = next + 4;
+	if (_status == 200)
+		_pStatus = pBody;
+}
+
+void	Request::checkHeader()
+{
+	std::string mHeader;
+	size_t	pos_nl_prev;
+	size_t	pos_nl_next;
+	size_t	pos_colon;
+	std::string fieldName;
+	std::string fieldValue;
+
+	mHeader = getHead();
+	pos_nl_prev = -1;
+	while (1) {
+		pos_colon = mHeader.find(':', pos_nl_prev + 1);
+		if (pos_colon == std::string::npos) {
+			if (mHeader[pos_nl_prev + 1] != '\0')
+				return errorStatus("# Header Line Error <Colon or \\r\\n>\n", 400, pError);
+			break ;
+		}
+		if (mHeader.substr(pos_nl_prev + 1, pos_colon - pos_nl_prev - 1).find(SP) != std::string::npos)
+			return errorStatus("# Header Line Error <Colon or \\r\\n>\n", 400, pError);
+		// SP found between the header field_name and colon
+		pos_nl_next = mHeader.find('\n', pos_colon + 1);
+		if (pos_nl_next == std::string::npos || mHeader[pos_nl_next - 1] != '\r')
+			return errorStatus("# Header Line Error <Colon or \\r\\n>\n", 400, pError);
+		fieldName = mHeader.substr(pos_nl_prev + 1, pos_colon - pos_nl_prev - 1);
+		fieldValue = mHeader.substr(pos_colon + 1, pos_nl_next - pos_colon - 2); // whitespace ?
+//		header[fieldName] = fieldValue;
+		pos_nl_prev = pos_nl_next;
+	}
+}
+
+
+void	Request::parseBody(size_t &prev) // considerate content-size header
 {
 	_body = getOrig().substr(prev);
+	_pStatus = pComplete;
+}
+
+void	Request::printRequest()
+{
+	if (_status == 200)
+		std::cout <<
+			  "[Request Line]" <<
+			  "\nMethod:" << getMethod() <<
+			  "\nTarget:" << getTarget() <<
+			  "\nVersion:" << getVersion() <<
+			  "\n[Header Info]\n" << getHead() <<
+			  "\n[Body Info]\n" << getBody() <<
+			  std::endl;
+	else
+		std::cout <<
+			"[Status]:" <<
+			_status <<
+			"\n[Reason]:" <<
+			_pStatus << // status <-> error map needed
+			std::endl;
+}
+
+void	Request::errorStatus(std::string message, int status, int pStatus)
+{
+	updateStatus(status, pStatus);
+	std::cout << message;
 }

@@ -1,6 +1,7 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 # include <iostream>
+# include <algorithm>
 # include <map>
 # define SP ' '
 # define CRLF "\r\n"
@@ -18,7 +19,7 @@ enum {
 class Request {
 public:
 	enum {
-		pRequest = 0
+		pRequest = 0,
 		pHeader,
 		pBody,
 		pComplete,
@@ -39,15 +40,19 @@ public:
 	void		setVersion(const std::string &version);
 	void 		setMethod(int method);
 
-	int			parseMessage();
+	void		parseMessage();
 
-	int			parseStartLine(size_t &pos);
-	int			checkVersion();
-	int			checkWhitespace(std::string &mControl);
+	void		parseStartLine(size_t &pos);
+	void		checkVersion();
 	void		parseControl(std::string &mControl, std::string method);
 
-	int			parseHeader(size_t &prev);
+	void		parseHeader(size_t &prev);
+	void		checkHeader();
+
 	void		parseBody(size_t &prev);
+
+	void		printRequest();
+	void		errorStatus(std::string message, int status, int pStatus);
 
 	Request();
 	~Request();
@@ -73,27 +78,27 @@ private:
  * parse_utils.cpp
  */
 int		printError(std::string message);
-void	printRequest(Request &request);
-int		errorStatus(std::string message, int status);
-
-/*
- * parse.cpp
- */
-int		parseMessage(Request &request);
-
-/*
- * parse_requestline.cpp
- */
-int		parseStartLine(Request &request, size_t &pos);
-
-/*
- * parse_header.cpp
- */
-int		parseHeader(Request &request, size_t &prev);
-
-/*
- * parse_body.cpp
- */
-int		parseBody(Request &request, size_t &prev);
+//void	printRequest(Request &request);
+//int		errorStatus(std::string message, int status);
+//
+///*
+// * parse.cpp
+// */
+//int		parseMessage(Request &request);
+//
+///*
+// * parse_requestline.cpp
+// */
+//int		parseStartLine(Request &request, size_t &pos);
+//
+///*
+// * parse_header.cpp
+// */
+//int		parseHeader(Request &request, size_t &prev);
+//
+///*
+// * parse_body.cpp
+// */
+//int		parseBody(Request &request, size_t &prev);
 
 #endif
