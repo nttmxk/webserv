@@ -21,6 +21,10 @@ HttpServer::~HttpServer() {}
 int
 HttpServer::openServer()
 {
+	// Socket resue address option
+	int opt = 1;
+	setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket < 0) {
 		std::cerr << "Server socket()";
@@ -55,6 +59,7 @@ HttpServer::runServer()
 	serverInfo._serverAddrLen = _serverAddrLen;
 	serverInfo._requestMsg = _requestMsg;
 
+	// _clientManager(Connection class) is declared in class HttpServer
 	// _connectManager.makeKqueue();
 	_clientManager.connectionLoop(serverInfo);
 }
