@@ -11,7 +11,7 @@ Config	g_conf("default.conf");
 int main(int argc, char** argv) {
 	if (argc == 2) {
 		std::string path = argv[1];
-		if (!(path.compare(path.rfind('.'), 7, ".config"))) {
+		if (!(path.compare(path.rfind('.'), 7, ".conf"))) {
 			std::cerr << "Error: Config" << std::endl;
 			return (1);
 		}
