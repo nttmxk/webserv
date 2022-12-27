@@ -1,18 +1,5 @@
 #include "Request.hpp"
 
-Request::Request() {
-	_pStatus = pRequest;
-	_status = 200;
-}
-
-Request::~Request() {}
-
-Request::Request(const Request &orig) {}
-
-Request& Request::operator=(const Request &orig) {
-	return (*this);
-}
-
 std::string Request::getOrig() { return (_orig); }
 std::string Request::getHead() { return (_head); }
 std::string Request::getBody() { return (_body); }
@@ -23,26 +10,6 @@ int 		Request::getStatus() { return (_status); }
 
 void 		Request::setOrig(std::string &orig) {
 	_orig = orig;
-}
-
-void		Request::setHead(std::string &head) {
-	_head = head;
-}
-
-void		Request::setBody(std::string &body) {
-	_body = body;
-}
-
-void 		Request::setTarget(const std::string &target) {
-	_target = target;
-}
-
-void		Request::setVersion(const std::string &version) {
-	_version = version;
-}
-
-void 		Request::setMethod(int method) {
-	_method = method;
 }
 
 void 		Request::updateStatus(int status, int pStatus) {
@@ -137,7 +104,7 @@ void	Request::parseHeader(size_t &prev)
 	if (next == std::string::npos)
 		return errorStatus("# Header Line Error <Npos>\n", 400, pError);
 	mHeader = mOrig.substr(prev + 2, next - prev);
-	setHead(mHeader);
+	_head = mHeader;
 	checkHeader();
 	prev = next + 4;
 	if (_status == 200)
@@ -159,18 +126,17 @@ void	Request::checkHeader()
 		pos_colon = mHeader.find(':', pos_nl_prev + 1);
 		if (pos_colon == std::string::npos) {
 			if (mHeader[pos_nl_prev + 1] != '\0')
-				return errorStatus("# Header Line Error <Colon or \\r\\n>\n", 400, pError);
+				return errorStatus("# Header Line Error <Colon>\n", 400, pError);
 			break ;
 		}
 		if (mHeader.substr(pos_nl_prev + 1, pos_colon - pos_nl_prev - 1).find(SP) != std::string::npos)
-			return errorStatus("# Header Line Error <Colon or \\r\\n>\n", 400, pError);
-		// SP found between the header field_name and colon
+			return errorStatus("# Header Line Error <SP in field_name>\n", 400, pError);
 		pos_nl_next = mHeader.find('\n', pos_colon + 1);
 		if (pos_nl_next == std::string::npos || mHeader[pos_nl_next - 1] != '\r')
-			return errorStatus("# Header Line Error <Colon or \\r\\n>\n", 400, pError);
+			return errorStatus("# Header Line Error <\\r\\n>\n", 400, pError);
 		fieldName = mHeader.substr(pos_nl_prev + 1, pos_colon - pos_nl_prev - 1);
 		fieldValue = mHeader.substr(pos_colon + 1, pos_nl_next - pos_colon - 2); // whitespace ?
-//		header[fieldName] = fieldValue;
+		header[fieldName] = fieldValue;
 		pos_nl_prev = pos_nl_next;
 	}
 }
@@ -190,7 +156,7 @@ void	Request::printRequest()
 			  "\nMethod:" << getMethod() <<
 			  "\nTarget:" << getTarget() <<
 			  "\nVersion:" << getVersion() <<
-			  "\n[Header Info]\n" << getHead() <<
+//			  "\n[Header Info]\n" << getHead() <<
 			  "\n[Body Info]\n" << getBody() <<
 			  std::endl;
 	else
@@ -200,10 +166,36 @@ void	Request::printRequest()
 			"\n[Reason]:" <<
 			_pStatus << // status <-> error map needed
 			std::endl;
+
+	std::cout << "[HEADER MAP]\n";
+	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end() ; ++it) {
+		std::cout << it->first << " " << it->second << std::endl;
+	}
 }
 
 void	Request::errorStatus(std::string message, int status, int pStatus)
 {
 	updateStatus(status, pStatus);
 	std::cout << message;
+}
+
+Request::Request(): _status(200), _pStatus(pRequest) {}
+
+Request::~Request() {}
+
+Request::Request(const Request &orig) {
+	*this = orig;
+}
+
+Request& Request::operator=(const Request &orig) {
+	_orig = orig._orig;
+	_head = orig._head;
+	_body = orig._body;
+	_target = orig._target;
+	_version = orig._version;
+	_status = orig._status;
+	_pStatus = orig._pStatus;
+	_method = orig._method;
+	header = orig.header;
+	return (*this);
 }
