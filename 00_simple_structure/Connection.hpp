@@ -11,9 +11,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include <Define.hpp>
-
-class Response;
+#include "Define.hpp"
+#include "Response.hpp"
+// class Response;
 
 class InfoServer
 {
@@ -33,6 +33,7 @@ class InfoServer
 			_serverAddr = obj._serverAddr;
 			_serverAddrLen = obj._serverAddrLen;
 			_requestMsg = obj._requestMsg;
+			return (*this);
 		}
 };
 
@@ -48,5 +49,5 @@ class Connection
 		void connectionLoop(InfoServer &serverInfo);
 };
 
-#include <Response.hpp>
+
 #endif

@@ -2,15 +2,20 @@
 /* CODED BY JIBANG ================================*/
 /***************************************************/
 
-#include <Response.hpp>
+#include "Response.hpp"
+
+Response::Response(){}
+
+Response::~Response(){}
 
 void
 Response::responseToClient(int clientSocket, InfoServer &serverInfo)
 {
 	std::string resMsg = makeResponseMsg();
+	(void)serverInfo;
 
 	long valWrite = write(clientSocket, resMsg.c_str(), resMsg.size());
-	if (valWrite == resMsg.size())
+	if (valWrite == (long)resMsg.size())
 		std::cout << "SERVER RESPONSE SENT\n";
 }
 

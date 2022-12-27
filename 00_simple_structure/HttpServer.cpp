@@ -2,7 +2,7 @@
 /* CODED BY JIBANG ================================*/
 /***************************************************/
 
-#include <HttpServer.hpp>
+#include "HttpServer.hpp"
 
 HttpServer::HttpServer(Config &config)
 {
@@ -43,7 +43,7 @@ HttpServer::openServer()
 }
 
 /* HttpServer::runServer() includes Connection clas object => accept() in loop */
-int
+void
 HttpServer::runServer()
 {
 	InfoServer serverInfo;

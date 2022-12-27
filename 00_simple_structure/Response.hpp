@@ -11,6 +11,8 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <sstream>
+#include "Define.hpp"
+#include "Connection.hpp"
 
 class InfoServer;
 
@@ -25,5 +27,5 @@ class Response
 		std::string makeResponseMsg();
 };
 
-#include <Connection.hpp>
+
 #endif

@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-#include <Define.hpp>
+#include "Define.hpp"
 
 class Config
 {

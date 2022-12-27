@@ -2,8 +2,9 @@
 /* CODED BY JIBANG ================================*/
 /***************************************************/
 
-#include <HttpServer.hpp>
-#include <Config.hpp>
+#include "HttpServer.hpp"
+#include "Config.hpp"
+#include "Define.hpp"
 
 #define IP_ADDRESS "0.0.0.0" //let OS choose default ip address
 #define PORT 8080
@@ -18,8 +19,7 @@ int main()
 	if (webServer.openServer() == FAIL)
 		return (1);
 
-	if (webServer.runServer() == FAIL) //runServer() includes Connection class methods
-		return (1);
+	webServer.runServer(); //runServer() includes Connection class methods
 
 	return (0);
 }

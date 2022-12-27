@@ -2,7 +2,9 @@
 /* CODED BY JIBANG ================================*/
 /***************************************************/
 
-#include <Connection.hpp>
+#include "Connection.hpp"
+#include "Define.hpp"
+#include "Response.hpp"
 
 class Response;
 
