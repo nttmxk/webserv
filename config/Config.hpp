@@ -9,9 +9,8 @@
 /*	Request class
 	author	:kbaek
 	date 	:2022.12.10
+
 */
-
-
 using vector_int_type = std::vector<int>;
 std::ostream& operator << (std::ostream& os, const vector_int_type& vect) {
     for (const auto& i : vect)
@@ -19,6 +18,12 @@ std::ostream& operator << (std::ostream& os, const vector_int_type& vect) {
     return os;
 }
 
+using vector_str_type = std::vector<std::string>;
+std::ostream& operator << (std::ostream& os, const vector_str_type& vect) {
+    for (const auto& i : vect)
+        os << ' ' << i;
+    return os;
+}
 // void BaseServer::printStruct()
 // {
 // 	std::cout << "ServerInfo : \n";
@@ -62,15 +67,34 @@ void Config_base::print_config()
 		tmpserver = it->getBServer();
 		tmplocation = it->getBLocation();
 
-		std::cout << "\nServerInfo : \n";
-		std::cout << "serverName = " << tmpserver.serverName << "\nhost= " << tmpserver.host << "\nport = " << tmpserver.port << "\nmaxRequestBodySize = " << tmpserver.maxRequestBodySize << std::endl;
-		
+		std::cout << "\n\n*** ServerInfo *** \n";
+		std::cout << "serverName = [" << tmpserver.serverName << "]\nhost= [" << tmpserver.host << "]\nport = [" << tmpserver.port << "]\nmaxRequestBodySize = [" << tmpserver.maxRequestBodySize << "]\n"<<std::endl;
+		std::cout << "\n** Error page ** \n";
 		for (auto& item : tmpserver.errorPages)
-        	std::cout << item.first << " is: " << item.second << std::endl;
-
-
+        	std::cout << "key = [" << item.first << "] value = [" << item.second << "]" <<std::endl;
+		
+		std::cout << "\n** Location ** \n";
+		for (auto& itemL : tmplocation)
+		{
+        	std::cout << "\nkey = [" << itemL.first << "]"<< std::endl;
+			Location tmpL;
+			tmpL = itemL.second;
+			std::cout << "value = \n";
+			std::cout << "	root = [" << tmpL.root << "]\n";
+			std::cout << "	maxBody = [" << tmpL.maxBody << "]\n";
+			std::cout << "	returnType = [" << tmpL.returnType << "]\n";
+			std::cout << "	autoListing = [";
+			if (tmpL.autoListing)
+				std::cout << "on]\n";
+			else
+				std::cout << "off]\n";
+			std::cout << "	returnRoot = [" << tmpL.returnRoot << "]\n";
+			std::cout << "	methods = [" << tmpL.Methods << "]\n";
+			std::cout << "	index = [" << tmpL.index << "]\n";
+			//"] value = [" << itemL.second << "]" <
+		}
 	}
-	
+
 }
 
 std::vector<BaseServer> Config_base::getConfigBase()
