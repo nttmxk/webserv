@@ -10,11 +10,6 @@
  * author: jinoh
  * date: 2022.12.09
  */
-enum {
-	GET = 0,
-	POST,
-	DELETE
-};
 
 class Request {
 public:
@@ -24,6 +19,11 @@ public:
 		pBody,
 		pComplete,
 		pError
+	};
+	enum {
+		GET = 0,
+		POST,
+		DELETE
 	};
 	std::map<std::string, std::string>	header; // what if there's more than one fieldValue ?
 	std::string	getOrig();
@@ -41,18 +41,7 @@ public:
 	void 		setMethod(int method);
 
 	void		parseMessage();
-
-	void		parseStartLine(size_t &pos);
-	void		checkVersion();
-	void		parseControl(std::string &mControl, std::string method);
-
-	void		parseHeader(size_t &prev);
-	void		checkHeader();
-
-	void		parseBody(size_t &prev);
-
 	void		printRequest();
-	void		errorStatus(std::string message, int status, int pStatus);
 
 	Request();
 	~Request();
@@ -64,41 +53,18 @@ private:
 	std::string	_head; // no need?
 	std::string	_body;
 	std::string	_target;
-	std::string	_version; // upper class might have it
+	std::string	_version;
 	int			_status;
 	int 		_pStatus;
 	int			_method; // GET POST DELETE
-
+	void		parseStartLine(size_t &pos);
+	void		checkVersion();
+	void		parseControl(std::string &mControl, std::string method);
+	void		parseHeader(size_t &prev);
+	void		checkHeader();
+	void		parseBody(size_t &prev);
 	void 		updateStatus(int status, int pStatus);
-
-
+	void		errorStatus(std::string message, int status, int pStatus);
 };
-
-/*
- * parse_utils.cpp
- */
-int		printError(std::string message);
-//void	printRequest(Request &request);
-//int		errorStatus(std::string message, int status);
-//
-///*
-// * parse.cpp
-// */
-//int		parseMessage(Request &request);
-//
-///*
-// * parse_requestline.cpp
-// */
-//int		parseStartLine(Request &request, size_t &pos);
-//
-///*
-// * parse_header.cpp
-// */
-//int		parseHeader(Request &request, size_t &prev);
-//
-///*
-// * parse_body.cpp
-// */
-//int		parseBody(Request &request, size_t &prev);
 
 #endif
