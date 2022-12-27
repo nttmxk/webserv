@@ -52,11 +52,11 @@ private:
 	int			_status;
 	int 		_pStatus;
 	int			_method;
-	void		parseStartLine(size_t &pos);
+	void		parseRequestLine(size_t &pos);
 	void		checkVersion();
 	void		parseControl(std::string &mControl, std::string method);
 	void		parseHeader(size_t &prev);
-	void		checkHeader();
+	void		tokenizeHeader();
 	void		parseBody(size_t &prev);
 	void 		updateStatus(int status, int pStatus);
 	void		errorStatus(std::string message, int status, int pStatus);

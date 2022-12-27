@@ -22,14 +22,14 @@ void	Request::parseMessage()
 	size_t	pos;
 
 	if (_pStatus == pRequest)
-		parseStartLine(pos);
+		parseRequestLine(pos);
 	if (_pStatus == pHeader)
 		parseHeader(pos);
 	if (_pStatus == pBody)
 		parseBody(pos);
 }
 
-void	Request::parseStartLine(size_t &pos)
+void	Request::parseRequestLine(size_t &pos)
 {
 	std::string	mControl;
 
@@ -84,12 +84,10 @@ void	Request::checkVersion()
 
 	version = getVersion();
 	if (version.find(SP) != std::string::npos || version.size() != 8 || version.compare(0, 7, "HTTP/1.") != 0)
-		updateStatus(400, pError); // Bad Request
-	else if (version.compare("HTTP/1.1") != 0 && version.compare("HTTP/1.0") != 0)
-		updateStatus(505, pError); // HTTP Version Not Supported
+		return updateStatus(400, pError); // Bad Request
+	if (version.compare("HTTP/1.1") != 0 && version.compare("HTTP/1.0") != 0)
+		return updateStatus(505, pError); // HTTP Version Not Supported
 }
-
-
 
 void	Request::parseHeader(size_t &prev)
 {
@@ -105,13 +103,13 @@ void	Request::parseHeader(size_t &prev)
 		return errorStatus("# Header Line Error <Npos>\n", 400, pError);
 	mHeader = mOrig.substr(prev + 2, next - prev);
 	_head = mHeader;
-	checkHeader();
+	tokenizeHeader();
 	prev = next + 4;
 	if (_status == 200)
 		_pStatus = pBody;
 }
 
-void	Request::checkHeader()
+void	Request::tokenizeHeader()
 {
 	std::string mHeader;
 	size_t	pos_nl_prev;
