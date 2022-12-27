@@ -38,7 +38,9 @@ public:
 	ServerInfo getBServer();
 	std::map< std::string, CgiConfig > getBCgi();
 	std::map< std::string, Location > getBLocation();
-	
+
+protected:
+	int str_is_digit(const std::string &str);
 	template <typename T>
 	std::string printPair8(const T &iterator, bool nl);
 
@@ -94,6 +96,14 @@ std::map< std::string, Location > BaseServer::getBLocation()
 bool BaseServer::getRedirect()
 {
 	return this->redirect;
+}
+
+int str_is_digit(const std::string &s)
+{
+	std::cout << s << std::endl;
+	if (s.find_first_not_of("0123456789") == std::string::npos)
+		return 1;
+	return 0;
 }
 
 #endif

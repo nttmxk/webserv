@@ -183,7 +183,6 @@ void	Config::configParse()
 	std::vector<int>::size_type i = 0;
 	while (i < fileSize)
 	{
-		std::cout << file[i] << std::endl;
 		if (file[i] == "server {") {
 			int j = 0;
 			flag = 1;
@@ -217,7 +216,7 @@ void	Config::serverInit(int start, int end)
 	size_t sub;
 	BaseServer tmpServer;
 
-	std::cout << "i = " << start << "j = " << end << std::endl;
+	// std::cout << "i = " << start << "j = " << end << std::endl;
 	end += start;
   	for ( ; start < end; start++) 
 	{
@@ -227,11 +226,17 @@ void	Config::serverInit(int start, int end)
 			{
 				sub = file[start].find(" ") + 1;
 				tmpServer.setBServer("h", file[start].substr(sub, p - sub));
+				std::string port = file[start].substr(p + 1);
+				if (!str_is_digit(port))
+				{
+					std::cerr << "Error: listen port is not digit error" << std::endl;
+					exit (1);
+				}
 				tmpServer.setBServer("p", file[start].substr(p + 1));
 			}
 			else
 			{
-				std::cerr << "Error: listen block : syntax error" << std::endl;
+				std::cerr << "Error: listen block syntax error" << std::endl;
 				exit (1);
 			}
 		}	
@@ -255,17 +260,20 @@ void	Config::serverInit(int start, int end)
 			std::string temp;
 			while (getline(ss, temp, ' '))
 			{
+				if (!str_is_digit(temp))
+				{
+					std::cerr << "Error: listen block : port is not digit error" << std::endl;
+					exit (1);
+				}
 				int i;
 				std::stringstream ssInt(temp);
 				ssInt >> i;
-				// std::cout << "sub num = ["<< i <<"]" << std::endl;
 				tmpErrorNum.push_back(i);
 			}
 			tmpServer.setError(slash == file[start].size() ? "": file[start].substr(slash + 1), tmpErrorNum);
 		}
 		else if (file[start].find("location ") != std::string::npos)
 		{
-			//std::map< std::string, Location >	BLocation;
 			sub = file[start].find(" ") + 1;
 			size_t q;
 			std::string str;
@@ -282,14 +290,14 @@ void	Config::serverInit(int start, int end)
 				std::cerr << "Error: Location block / syntax error" << std::endl;
 				exit (1);
 			}
-			int flag;
 			Location location;
 			location.root = "";
 			location.maxBody = 9000;
 			location.returnType = -1;
 			location.autoListing = false;
 			location.returnRoot = "";
-			while (flag = (file[++start] != "}"))
+			
+			while (file[++start] != "}")
 			{
 				if ((sub = file[start].find(" ")) != std::string::npos)
 				{
@@ -318,8 +326,14 @@ void	Config::serverInit(int start, int end)
 					}
 					else if (tmp == "max_body")
 					{
+						std::string maxB = file[start].substr(sub + 1);
+						if (!str_is_digit(maxB))
+						{
+							std::cerr << "Error: max_body block : max_body is not digit error" << std::endl;
+							exit (1);
+						}
 						int i;
-						std::stringstream ssInt(file[start].substr(sub + 1));
+						std::stringstream ssInt(maxB);
 						ssInt >> i;
 						location.maxBody = i;
 					}
@@ -349,11 +363,11 @@ void	Config::serverInit(int start, int end)
 					exit (1);
 				}
 			}
-			if (flag)
-			{
-				std::cerr << "Error: Location block {  } syntax error" << std::endl;
-				exit (1);
-			}
+			// if (flag)
+			// {
+			// 	std::cerr << "Error: Location block {  } syntax error" << std::endl;
+			// 	exit (1);
+			// }
 			tmpServer.setBlcation(str, location);
 		}
 		else if (file[start].find("cgi ") != std::string::npos)
@@ -375,9 +389,8 @@ void	Config::serverInit(int start, int end)
 				exit (1);
 			}
 			
-			int flag;
 			CgiConfig cgi;
-			while (flag = (file[++start] != "}"))
+			while (file[++start] != "}")
 			{
 				if ((sub = file[start].find(" ")) != std::string::npos)
 				{
@@ -401,11 +414,11 @@ void	Config::serverInit(int start, int end)
 					exit (1);
 				}
 			}
-			if (flag)
-			{
-				std::cerr << "Error: Location block {  } syntax error" << std::endl;
-				exit (1);
-			}
+			// if (flag)
+			// {
+			// 	std::cerr << "Error: Location block {  } syntax error" << std::endl;
+			// 	exit (1);
+			// }
 			tmpServer.setBCgi(str, cgi);
 		}
 		else if (file[start] != "server {" && file[start] != "}")
@@ -418,10 +431,10 @@ void	Config::serverInit(int start, int end)
 	base.push_back(tmpServer);
 	numOfServer += 1;
 	/* checkfillup();
-		1. post is digit
+		1. post is digit -> done
 		2. check there are all pare
 		3. check there is at least one location block every server
-		4. { } 확인
+		4. { } 확인 -> done
 
 	*/
 }
