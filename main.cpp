@@ -1,4 +1,4 @@
-#include "Config.hpp"
+#include "configParser/Config.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -6,12 +6,12 @@
 #include <string>
 #include <exception>
 
-Config	g_conf("default.conf");
+Config	g_conf("configFiles/default.conf");
 
 int main(int argc, char** argv) {
 	if (argc == 2) {
 		std::string path = argv[1];
-		if (!(path.compare(path.rfind('.'), 7, ".conf"))) {
+		if ((path.compare(path.find('.'), 5, ".conf")) != 0) {
 			std::cerr << "Error: Config" << std::endl;
 			return (1);
 		}
@@ -23,14 +23,5 @@ int main(int argc, char** argv) {
 			return (1);
 		}
 	}
-	// try {
-		
-	// 	//루프
-	// }
-	// catch (std::exception& e) {
-	// 	std::cerr << "Error: Event" << std::endl;
-	// 	return (1);
-	// }
-	
     return 0;
 }
