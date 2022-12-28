@@ -36,7 +36,7 @@ class HttpServer
 		std::string _requestMsg;
 	/* class memebers */
 	private:
-		Connection _clientManager;
+		Connection _clientManager; // if many servers, make it pointer type
 
 	/* methods */
 	public:

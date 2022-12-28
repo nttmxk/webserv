@@ -18,6 +18,8 @@
 #include <vector>
 #include <iterator>
 
+#include <fcntl.h>
+
 #include "Define.hpp"
 #include "Response.hpp"
 // class Response;
@@ -29,6 +31,7 @@ class Connection
 {
 	private:
 		InfoServer _serverInfo;
+		Multiplex _eventManager;
 		int _clientSocket;
 
 	public:
@@ -80,6 +83,8 @@ class Multiplex
 		void declareKqueue();
 		void enrollEventToChangeList(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void* udata);
 		int senseEvents();
+		void clearChangeList();
+		struct kevent const *getEventList() const;
 };
 
 void
@@ -115,6 +120,18 @@ Multiplex::senseEvents()
 		exit(1); // make it throw later
 	}
 	return (sensedEvents);
+}
+
+void
+Multiplex::clearChangeList()
+{
+	_changeList.clear();
+}
+
+struct kevent const *
+Multiplex::getEventList() const
+{
+	return (_eventList);
 }
 
 #endif

@@ -60,7 +60,6 @@ HttpServer::runServer()
 	serverInfo._requestMsg = _requestMsg;
 
 	// _clientManager(Connection class) is declared in class HttpServer
-
 	_clientManager.connectionLoop(serverInfo);
 }
 
