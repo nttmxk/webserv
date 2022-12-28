@@ -56,7 +56,12 @@ void BaseServer::setBServer(std::string fo, std::string str)
 	if (fo == "h")
 		BServer.host = str;
 	else if (fo == "p")
-		BServer.port = str;
+	{
+		int i;
+		std::stringstream ssInt(str);
+		ssInt >> i;
+		BServer.port = i;
+	}
 	else if (fo == "s")
 	{
 		std::cout << "str = [" << str << "]" << std::endl;
