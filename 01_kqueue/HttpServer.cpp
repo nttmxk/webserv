@@ -21,15 +21,15 @@ HttpServer::~HttpServer() {}
 int
 HttpServer::openServer()
 {
-	// Socket resue address option
-	int opt = 1;
-	setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
 	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 	if (_serverSocket < 0) {
 		std::cerr << "Server socket()";
 		return (FAIL);
 	}
+
+	// Socket resue address option
+	int opt = 1;
+	setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
 	if (bind(_serverSocket, (sockaddr *)&_serverAddr, _serverAddrLen) != SUCCESS) {
 		std::cerr << "Server bind()";

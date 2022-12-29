@@ -3,8 +3,6 @@
 /***************************************************/
 
 #include "Connection.hpp"
-#include "Define.hpp"
-#include "Response.hpp"
 
 class Response;
 
