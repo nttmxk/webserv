@@ -5,14 +5,8 @@
 #ifndef HTTPSERVER_HPP
 #define HTTPSERVER_HPP
 
-#include <iostream>
-#include <string>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <sstream>
-
 #include "Define.hpp"
+#include "cppLibrary.hpp"
 
 // class Connection; //in Connection.hpp // forward dec -> Field has incomplete type Error
 #include "Connection.hpp"

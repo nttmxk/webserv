@@ -31,7 +31,7 @@ Connection::connectionLoop(InfoServer &serverInfo)
 
 			/* error case */
 			if (currEvent->flags & EV_ERROR) {
-				if (currEvent->ident == serverInfo._serverSocket)
+				if (currEvent->ident == static_cast<unsigned long>(serverInfo._serverSocket))
 				{
 					std::cerr << "server error : ";
 					break ;

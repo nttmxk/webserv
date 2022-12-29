@@ -5,9 +5,6 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include <iostream>
-#include <string>
-
 #include "Define.hpp"
 
 class Config

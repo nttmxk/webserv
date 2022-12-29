@@ -5,16 +5,8 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include <iostream>
-#include <string>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <sstream>
 #include "Define.hpp"
-#include "Connection.hpp"
-
-class InfoServer;
+#include "InfoServer.hpp"
 
 class Response
 {
@@ -26,6 +18,5 @@ class Response
 		void responseToClient(int clientSocket, InfoServer &serverInfo);
 		std::string makeResponseMsg();
 };
-
 
 #endif
