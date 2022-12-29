@@ -22,21 +22,22 @@ Connection::connectionLoop(InfoServer &serverInfo)
 	while (true)
 	{
 		eventsNum = _eventManager.senseEvents();
+		_eventManager.clearChangeList();
 		for (int i = 0; i < eventsNum; ++i)
 		{
 
 			currEvent = const_cast<struct kevent const *>(&(_eventManager.getEventList()[i]));
 
 			/* error case */
-			if (currEvent->flags & EV_ERROR) {
+			if (currEvent->flags & EV_ERROR && errno != EAGAIN) {
 				if (currEvent->ident == static_cast<unsigned long>(serverInfo._serverSocket))
 				{
-					std::cerr << "server error : ";
+					std::cerr << "server error : \n";
 					break ;
 				}
-				else
+				else if (currEvent->ident == static_cast<unsigned long>(_clientSocket))
 				{
-					std::cerr << "client error : ";
+					std::cerr << "client error : \n";
 					close(currEvent->ident);
 				}
 			}
@@ -47,7 +48,7 @@ Connection::connectionLoop(InfoServer &serverInfo)
 				_clientSocket = accept(serverInfo._serverSocket, (sockaddr *)&serverInfo._serverAddr, &serverInfo._serverAddrLen);
 				if (_clientSocket == FAIL)
 				{
-					std::cerr << "Client connection error";
+					std::cerr << "Client connection error\n";
 					break;
 				}
 
@@ -57,13 +58,11 @@ Connection::connectionLoop(InfoServer &serverInfo)
 
 				char buffer[BUFFER_SIZE] = {0};
 				int valRead = read(_clientSocket, buffer, BUFFER_SIZE);
-				if (valRead == FAIL)
+				if(valRead == FAIL && errno != EAGAIN)
 				{
 					std::cerr << "Read error";
 					break;
 				}
-
-				_eventManager.clearChangeList();
 				_eventManager.enrollEventToChangeList(_clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 				_eventManager.enrollEventToChangeList(_clientSocket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 			}
