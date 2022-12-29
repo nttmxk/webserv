@@ -51,6 +51,10 @@ Connection::connectionLoop(InfoServer &serverInfo)
 					break;
 				}
 
+				if (fcntl(_clientSocket, F_SETFL, O_NONBLOCK) == FAIL) {
+					//throw execption, and send client 5XX
+				}
+
 				char buffer[BUFFER_SIZE] = {0};
 				int valRead = read(_clientSocket, buffer, BUFFER_SIZE);
 				if (valRead == FAIL)
@@ -58,8 +62,6 @@ Connection::connectionLoop(InfoServer &serverInfo)
 					std::cerr << "Read error";
 					break;
 				}
-
-				fcntl(_clientSocket, F_SETFL, O_NONBLOCK);
 
 				_eventManager.clearChangeList();
 				_eventManager.enrollEventToChangeList(_clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);

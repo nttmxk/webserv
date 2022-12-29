@@ -29,7 +29,15 @@ HttpServer::openServer()
 
 	// Socket resue address option
 	int opt = 1;
-	setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == FAIL) {
+		std::cerr << "setsockopt() :";
+		return (FAIL);
+	}
+
+	// if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == FAIL) {
+	// 	std::cerr << "serverSocket fcntl() :";
+	// 	return (FAIL);
+	// }
 
 	if (bind(_serverSocket, (sockaddr *)&_serverAddr, _serverAddrLen) != SUCCESS) {
 		std::cerr << "Server bind()";
