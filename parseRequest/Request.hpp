@@ -3,6 +3,7 @@
 # include <iostream>
 # include <algorithm>
 # include <map>
+# include "../parseUri/Uri.hpp"
 # define SP ' '
 # define CRLF "\r\n"
 
@@ -13,7 +14,19 @@
 
 class Request {
 public:
-	std::map<std::string, std::string>	header; // what if there's more than one fieldValue ?
+	struct s_result {
+		int method;
+		int version; // no need?
+		int status;
+		bool close;
+		std::map<std::string, std::string> header;
+		std::string body;
+		std::string path; // target = (host) + path + query
+		std::string query;
+		std::string host;
+	}	t_result;
+
+	std::map<std::string, std::string>	header;
 	std::string	getOrig();
 	std::string	getHead();
 	std::string	getBody();
@@ -52,11 +65,17 @@ private:
 	int			_status;
 	int 		_pStatus;
 	int			_method;
+	int 		_bodyLength;
+	bool		_chunked;
 	void		parseStartLine(size_t &pos);
 	void		checkVersion();
 	void		parseControl(std::string &mControl, std::string method);
 	void		parseHeader(size_t &prev);
 	void		checkHeader();
+	void 		verifyHeader();
+	void 		checkHost();
+	void 		checkBodyLength();
+	void 		checkConnection();
 	void		parseBody(size_t &prev);
 	void 		updateStatus(int status, int pStatus);
 	void		errorStatus(std::string message, int status, int pStatus);

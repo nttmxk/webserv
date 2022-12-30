@@ -71,9 +71,13 @@ void Request::parseControl(std::string &mControl, std::string method)
 	if (pos == std::string::npos)
 		return errorStatus("# Control Line Error <" + method + "/Npos>\n", 400, pError);
 
-	_target = mControl.substr(len_method + 1, pos - len_method - 1); // Status 414 need to be checked
+	_target = mControl.substr(len_method + 1, pos - len_method - 1); // Status 414 need to be checkedv
+	Uri uriParser;
+	uriParser.parseTarget(_target);
+
 	_version = mControl.substr(pos + 1);
 	checkVersion();
+
 	if (_status == 200)
 		_pStatus = pHeader;
 }
@@ -139,13 +143,92 @@ void	Request::checkHeader()
 		header[fieldName] = fieldValue;
 		pos_nl_prev = pos_nl_next;
 	}
+	verifyHeader();
+}
+/*
+ * host
+ * connection
+ * content-length
+ * transfer-encoding
+ * content-type || Cookie
+ */
+void 	Request::verifyHeader()
+{
+	if (_pStatus == pHeader)
+		checkHost();
+	if (_pStatus == pHeader)
+		checkBodyLength();
+	if (_pStatus == pHeader)
+		checkConnection();
 }
 
+void 	Request::checkHost()
+{
+	std::map<std::string, std::string>::iterator it;
+
+	it = header.find("Host");
+	if (it == header.end())
+		return errorStatus("Host cannot be empty", 400, pError);
+//	if (verifyHost())
+	result.host = it->second;
+}
+
+void 	Request::checkBodyLength()
+{
+	std::map<std::string, std::string>::iterator it;
+
+	it = header.find("Content-Length"); // Upper-case?
+	if (it == header.end())
+		_bodyLength = -1;
+	else
+	{
+		if (it.second.find_first_not_of(DIGIT) != std::string::npos)
+			return errorStatus("CL should only include DIGIT", 400, pError);
+		std::stringstream ss(it.second);
+		ss >> _bodyLength; // client_max_body_size check
+	}
+	it = header.find("Transfer-Encoding");
+	if (it != header.end())
+	{
+		if (_bodyLength != -1)
+			return errorStatus("CL and TE are both exist", 400, pError);
+		if (it.second.compare("chunked") == 0)
+			_chunked = true;
+		else
+			; // what to do with deflate, compress, gzip etc...
+	}
+}
+
+void 	Request::checkConnection()
+{
+	std::map<std::string, std::string>::iterator it;
+
+	it = header.find("Connection");
+	if (it == header.end())
+		return ;
+	if (it.second.compare("close"))
+		result.close = true;
+}
 
 void	Request::parseBody(size_t &prev) // considerate content-size header
 {
-	_body = getOrig().substr(prev);
-	_pStatus = pComplete;
+	if (_bodyLength == -1)
+	{
+		_pStatus = pComplete;
+		return ;
+	}
+	if (_chunked)
+		return parseChunked(prev);
+	_body = getOrig().substr(prev); // append?
+	if (_body.size() >= _bodyLength)
+	{
+		if (_body.size() == _bodyLength)
+			_pStatus = pComplete;
+		else
+			; // huh?
+	}
+	else
+		; // huh?
 }
 
 void	Request::printRequest()
@@ -179,7 +262,7 @@ void	Request::errorStatus(std::string message, int status, int pStatus)
 	std::cout << message;
 }
 
-Request::Request(): _status(200), _pStatus(pRequest) {}
+Request::Request(): _status(200), _pStatus(pRequest), _bodyLength(0), _chunked(false) {}
 
 Request::~Request() {}
 
