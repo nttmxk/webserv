@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 class Response 
 {
@@ -12,6 +15,11 @@ public:
 	std::string getResponseMessage(void);
 	std::string getResult(void);
 	bool sendFromWbuf(int fd);
+
+
+	void getMethod();
+	void postMethod();
+	int openFile(const char* path);
 
   struct Result {
     std::string status;
@@ -24,7 +32,7 @@ public:
 
 private:
 	std::string message;
-
+	Result result;
 
 };
 
@@ -34,6 +42,39 @@ Response::Response(/* args */)
 
 Response::~Response()
 {
+}
+
+void
+getMethod()
+{
+	openFile();
+	initResponse();
+
+}
+
+void
+postMethod()
+{
+
+}
+
+//리소스에 접근했을 때 실제 파일이 있는지 찾아서 read 를 통해 확인하는 함수
+int
+Response::openFile(const char* path) {
+  errno = 0;
+  int fd = open(path, O_RDONLY, 0644);
+  if (fd == -1) {
+    if(errno == EACCES)
+      result.status = 403;  // FORBIDDEN 
+	else if (errno == ENOENT)
+      result.status = 404;  // PAGE NOT FOUND
+    else if (errno == EMFILE)
+      result.status = 503;  // SERVICE UNAVAILABLE
+    else
+      result.status = 500;  // INTERNAL SERVER ERROR}
+  } else
+    fcntl(fd, F_SETFL, O_NONBLOCK);
+  return fd;
 }
 
 std::string
