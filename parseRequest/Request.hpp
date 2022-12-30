@@ -3,9 +3,11 @@
 # include <iostream>
 # include <algorithm>
 # include <map>
-# include "../parseUri/Uri.hpp"
+# include <sstream>
 # define SP ' '
+# define HTAB '\t'
 # define CRLF "\r\n"
+# define DIGIT "0123456789"
 
 /** Request class
  * author: jinoh
@@ -73,12 +75,14 @@ private:
 	void		parseControl(std::string &mControl, std::string method);
 	void		parseHeader(size_t &prev);
 	void		tokenizeHeader();
+	bool		isOWS(int c);
 	void		checkHeader();
 	void 		verifyHeader();
 	void 		checkHost();
 	void 		checkBodyLength();
 	void 		checkConnection();
 	void		parseBody(size_t &prev);
+	void		parseChunked(size_t &prev);
 	void 		updateStatus(int status, int pStatus);
 	void		errorStatus(std::string message, int status, int pStatus);
 };

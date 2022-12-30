@@ -72,8 +72,8 @@ void Request::parseControl(std::string &mControl, std::string method)
 		return errorStatus("# Control Line Error <" + method + "/Npos>\n", 400, pError);
 
 	_target = mControl.substr(len_method + 1, pos - len_method - 1); // Status 414 need to be checkedv
-	Uri uriParser;
-	uriParser.parseTarget(_target);
+//	Uri uriParser;
+//	uriParser.parseTarget(_target);
 
 	_version = mControl.substr(pos + 1);
 	checkVersion();
@@ -118,6 +118,8 @@ void	Request::tokenizeHeader()
 	std::string mHeader;
 	size_t	pos_nl_prev;
 	size_t	pos_nl_next;
+	size_t	pos_start;
+	size_t	pos_end;
 	size_t	pos_colon;
 	std::string fieldName;
 	std::string fieldValue;
@@ -137,12 +139,26 @@ void	Request::tokenizeHeader()
 		if (pos_nl_next == std::string::npos || mHeader[pos_nl_next - 1] != '\r')
 			return errorStatus("# Header Line Error <\\r\\n>\n", 400, pError);
 		fieldName = mHeader.substr(pos_nl_prev + 1, pos_colon - pos_nl_prev - 1);
-		fieldValue = mHeader.substr(pos_colon + 1, pos_nl_next - pos_colon - 2); // whitespace ?
+		pos_start = pos_colon + 1;
+		pos_end = pos_nl_next - 2;
+		while (isOWS(mHeader[pos_start]))
+			++pos_start;
+		while (isOWS(mHeader[pos_end]))
+			--pos_end;
+		fieldValue = mHeader.substr(pos_start, pos_end - pos_start + 1);
 		header[fieldName] = fieldValue;
 		pos_nl_prev = pos_nl_next;
 	}
 	verifyHeader();
 }
+
+bool	Request::isOWS(int c)
+{
+	if (c == SP || c == HTAB)
+		return true;
+	return false;
+}
+
 /*
  * host
  * connection
@@ -168,7 +184,7 @@ void 	Request::checkHost()
 	if (it == header.end())
 		return errorStatus("Host cannot be empty", 400, pError);
 //	if (verifyHost())
-	result.host = it->second;
+	t_result.host = it->second;
 }
 
 void 	Request::checkBodyLength()
@@ -180,9 +196,9 @@ void 	Request::checkBodyLength()
 		_bodyLength = -1;
 	else
 	{
-		if (it.second.find_first_not_of(DIGIT) != std::string::npos)
+		if (it->second.find_first_not_of(DIGIT) != std::string::npos)
 			return errorStatus("CL should only include DIGIT", 400, pError);
-		std::stringstream ss(it.second);
+		std::stringstream ss(it->second);
 		ss >> _bodyLength; // client_max_body_size check
 	}
 	it = header.find("Transfer-Encoding");
@@ -190,7 +206,7 @@ void 	Request::checkBodyLength()
 	{
 		if (_bodyLength != -1)
 			return errorStatus("CL and TE are both exist", 400, pError);
-		if (it.second.compare("chunked") == 0)
+		if (it->second.compare("chunked") == 0)
 			_chunked = true;
 		else
 			; // what to do with deflate, compress, gzip etc...
@@ -204,8 +220,8 @@ void 	Request::checkConnection()
 	it = header.find("Connection");
 	if (it == header.end())
 		return ;
-	if (it.second.compare("close"))
-		result.close = true;
+	if (it->second.compare("close"))
+		t_result.close = true;
 }
 
 void	Request::parseBody(size_t &prev) // considerate content-size header
@@ -229,6 +245,9 @@ void	Request::parseBody(size_t &prev) // considerate content-size header
 		; // huh?
 }
 
+void 	Request::parseChunked(size_t &prev)
+{;}
+
 void	Request::printRequest()
 {
 	if (_status == 200)
@@ -247,10 +266,9 @@ void	Request::printRequest()
 			"\n[Reason]:" <<
 			_pStatus << // status <-> error map needed
 			std::endl;
-
 	std::cout << "[HEADER MAP]\n";
 	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end() ; ++it) {
-		std::cout << it->first << " " << it->second << std::endl;
+		std::cout << it->first << ":[" << it->second << "]\n";
 	}
 }
 
