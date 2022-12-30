@@ -29,7 +29,7 @@ class Config : public Config_base
 {
 public:
 	Config();
-	Config(Config const &src);
+	// Config(Config const &src);
 	// Config &operator=(Config const &srcs) {};
 	~Config();
 	Config(const std::string path);

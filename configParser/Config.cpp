@@ -24,8 +24,8 @@ Config::Config()
 Config::~Config()
 {}
 
-Config::Config(Config const &src)
-{}
+// Config::Config(Config const &src)
+// {}
 
 Config::Config(const std::string _path) : Config_base() {
 
