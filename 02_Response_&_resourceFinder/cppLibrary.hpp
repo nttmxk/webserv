@@ -15,4 +15,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <ctime>
+#include <map>
+#include <vector>
+#include <algorithm>
+#include <iterator>
+#include <sstream>
+
 #endif
