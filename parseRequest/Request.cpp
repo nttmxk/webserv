@@ -5,8 +5,6 @@ std::string Request::getHead() { return (_head); }
 std::string Request::getBody() { return (_body); }
 std::string	Request::getTarget() { return (_target); }
 std::string	Request::getVersion() { return (_version); }
-int 		Request::getMethod() { return (_method); }
-int 		Request::getStatus() { return (_status); }
 
 /*
  * 	@brief	Set original message from client to Request class
@@ -21,7 +19,7 @@ void 		Request::setOrig(std::string &orig) {
  *	@param	status code, parsing status to update
  */
 void 		Request::updateStatus(int status, int pStatus) {
-	_status = status;
+	t_result.status = status;
 	_pStatus = pStatus;
 }
 
@@ -81,23 +79,23 @@ void Request::parseControl(std::string &mControl, std::string method)
 	if (mControl.compare(0, len_method, method) != 0 || mControl[len_method] != SP)
 		return errorStatus("# Control Line Error <" + method + ">\n", 501, pError); // Not Implemented
 	if (method == "GET")
-		_method = GET;
+		t_result.method = GET;
 	else if (method == "POST")
-		_method = POST;
+		t_result.method = POST;
 	else
-		_method = DELETE;
+		t_result.method = DELETE;
 	pos = mControl.find(SP, len_method + 1);
 	if (pos == std::string::npos)
 		return errorStatus("# Control Line Error <" + method + "/Npos>\n", 400, pError);
 
-	_target = mControl.substr(len_method + 1, pos - len_method - 1); // Status 414 need to be checkedv
+	_target = mControl.substr(len_method + 1, pos - len_method - 1); // Status 414 need to be checked
 //	Uri uriParser;
 //	uriParser.parseTarget(_target);
 
 	_version = mControl.substr(pos + 1);
 	checkVersion();
 
-	if (_status == 200)
+	if (t_result.status == 200)
 		_pStatus = pHeader;
 }
 
@@ -135,7 +133,7 @@ void	Request::parseHeader(size_t &prev)
 	_head = mHeader;
 	tokenizeHeader();
 	prev = next + 4;
-	if (_status == 200)
+	if (t_result.status == 200)
 		_pStatus = pBody;
 }
 
@@ -301,22 +299,31 @@ void 	Request::parseChunked(size_t &prev)
  */
 void	Request::printRequest()
 {
-	if (_status == 200)
+	if (t_result.status == 200)
 		std::cout <<
 			  "[Request Line]" <<
-			  "\nMethod:" << getMethod() <<
-			  "\nTarget:" << getTarget() <<
+			  "\nTarget:" << getTarget() << // soon to be deleted
 			  "\nVersion:" << getVersion() <<
 			  "\n[Body Info]\n" << getBody() <<
 			  std::endl;
 	else
 		std::cout <<
 			"\n[Status]:" <<
-			_status <<
+			t_result.status <<
 			"\n[Reason]:" <<
 			_pStatus << // status <-> error map needed
 			std::endl;
-	std::cout << "[HEADER MAP]\n";
+	std::cout << "[Result Info]" <<
+				"\nMethod:" << t_result.method <<
+				"\nVersion:" << t_result.version <<
+				"\nStatus:" << t_result.status <<
+				"\nClose:" << t_result.close <<
+				"\nBody:" << t_result.body <<
+				"\nPath:" << t_result.path <<
+				"\nQuery:" << t_result.query <<
+				"\nHost:" << t_result.host
+				;
+	std::cout << "[Header Info]\n";
 	for (std::map<std::string, std::string>::iterator it = t_result.header.begin(); it != t_result.header.end() ; ++it) {
 		std::cout << it->first << ":[" << it->second << "]\n";
 	}
@@ -332,7 +339,9 @@ void	Request::errorStatus(std::string message, int status, int pStatus)
 	std::cout << message;
 }
 
-Request::Request(): _status(200), _pStatus(pRequest), _bodyLength(0), _chunked(false) {}
+Request::Request(): _pStatus(pRequest), _bodyLength(0), _chunked(false) {
+	t_result.status = 200;
+}
 
 Request::~Request() {}
 
@@ -346,9 +355,7 @@ Request& Request::operator=(const Request &orig) {
 	_body = orig._body;
 	_target = orig._target;
 	_version = orig._version;
-	_status = orig._status;
 	_pStatus = orig._pStatus;
-	_method = orig._method;
 	t_result = orig.t_result;
 	return (*this);
 }

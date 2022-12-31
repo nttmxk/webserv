@@ -32,8 +32,6 @@ public:
 	std::string	getBody();
 	std::string	getTarget();
 	std::string	getVersion();
-	int 		getMethod();
-	int 		getStatus();
 	void 		setOrig(std::string &orig);
 
 	void		parseMessage();
@@ -58,13 +56,11 @@ private:
 		DELETE
 	};
 	std::string	_orig;
-	std::string	_head;
+	std::string	_head;	// for debugging purpose
 	std::string	_body;
 	std::string	_target;
-	std::string	_version;
-	int			_status;
+	std::string	_version;	// no need?
 	int 		_pStatus;
-	int			_method;
 	int 		_bodyLength;
 	bool		_chunked;
 	void		parseRequestLine(size_t &pos);
