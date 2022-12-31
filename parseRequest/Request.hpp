@@ -27,8 +27,6 @@ public:
 		std::string query;
 		std::string host;
 	}	t_result;
-
-	std::map<std::string, std::string>	header;
 	std::string	getOrig();
 	std::string	getHead();
 	std::string	getBody();
@@ -67,12 +65,13 @@ private:
 	int			_status;
 	int 		_pStatus;
 	int			_method;
-	void		parseRequestLine(size_t &pos);
 	int 		_bodyLength;
 	bool		_chunked;
+	void		parseRequestLine(size_t &pos);
 	void		parseStartLine(size_t &pos);
 	void		checkVersion();
 	void		parseControl(std::string &mControl, std::string method);
+
 	void		parseHeader(size_t &prev);
 	void		tokenizeHeader();
 	bool		isOWS(int c);
@@ -81,8 +80,10 @@ private:
 	void 		checkHost();
 	void 		checkBodyLength();
 	void 		checkConnection();
+
 	void		parseBody(size_t &prev);
 	void		parseChunked(size_t &prev);
+
 	void 		updateStatus(int status, int pStatus);
 	void		errorStatus(std::string message, int status, int pStatus);
 };

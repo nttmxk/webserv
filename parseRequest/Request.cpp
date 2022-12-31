@@ -146,7 +146,9 @@ void	Request::tokenizeHeader()
 		while (isOWS(mHeader[pos_end]))
 			--pos_end;
 		fieldValue = mHeader.substr(pos_start, pos_end - pos_start + 1);
-		header[fieldName] = fieldValue;
+		std::transform(fieldValue.begin(), fieldValue.end(), fieldValue.begin(), ::tolower);
+		std::transform(fieldName.begin(), fieldName.end(), fieldName.begin(), ::tolower);
+		t_result.header[fieldName] = fieldValue;
 		pos_nl_prev = pos_nl_next;
 	}
 	verifyHeader();
@@ -180,8 +182,8 @@ void 	Request::checkHost()
 {
 	std::map<std::string, std::string>::iterator it;
 
-	it = header.find("Host");
-	if (it == header.end())
+	it = t_result.header.find("host");
+	if (it == t_result.header.end())
 		return errorStatus("Host cannot be empty", 400, pError);
 //	if (verifyHost())
 	t_result.host = it->second;
@@ -191,8 +193,8 @@ void 	Request::checkBodyLength()
 {
 	std::map<std::string, std::string>::iterator it;
 
-	it = header.find("Content-Length"); // Upper-case?
-	if (it == header.end())
+	it = t_result.header.find("content-length");
+	if (it == t_result.header.end())
 		_bodyLength = -1;
 	else
 	{
@@ -201,8 +203,8 @@ void 	Request::checkBodyLength()
 		std::stringstream ss(it->second);
 		ss >> _bodyLength; // client_max_body_size check
 	}
-	it = header.find("Transfer-Encoding");
-	if (it != header.end())
+	it = t_result.header.find("transfer-encoding");
+	if (it != t_result.header.end())
 	{
 		if (_bodyLength != -1)
 			return errorStatus("CL and TE are both exist", 400, pError);
@@ -217,14 +219,14 @@ void 	Request::checkConnection()
 {
 	std::map<std::string, std::string>::iterator it;
 
-	it = header.find("Connection");
-	if (it == header.end())
+	it = t_result.header.find("connection");
+	if (it == t_result.header.end())
 		return ;
 	if (it->second.compare("close"))
 		t_result.close = true;
 }
 
-void	Request::parseBody(size_t &prev) // considerate content-size header
+void	Request::parseBody(size_t &prev) // considerate content-size t_result.header
 {
 	if (_bodyLength == -1)
 	{
@@ -261,13 +263,13 @@ void	Request::printRequest()
 			  std::endl;
 	else
 		std::cout <<
-			"[Status]:" <<
+			"\n[Status]:" <<
 			_status <<
 			"\n[Reason]:" <<
 			_pStatus << // status <-> error map needed
 			std::endl;
 	std::cout << "[HEADER MAP]\n";
-	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end() ; ++it) {
+	for (std::map<std::string, std::string>::iterator it = t_result.header.begin(); it != t_result.header.end() ; ++it) {
 		std::cout << it->first << ":[" << it->second << "]\n";
 	}
 }
@@ -295,6 +297,6 @@ Request& Request::operator=(const Request &orig) {
 	_status = orig._status;
 	_pStatus = orig._pStatus;
 	_method = orig._method;
-	header = orig.header;
+	t_result = orig.t_result;
 	return (*this);
 }
