@@ -1,4 +1,4 @@
-#include "Cgi.hpp"
+// #include "Cgi.hpp"
 #include <iostream>
 #include <string>
 #include <map>
@@ -45,17 +45,40 @@ Response::~Response()
 }
 
 void
-getMethod()
+Response::getMethod()
 {
-	openFile();
-	initResponse();
+	openFile("index.html");
+	setContent();
+	message = "HTTP/1.1"
+	send();
 
 }
 
 void
-postMethod()
+Response::postMethod()
 {
 
+}
+
+void
+Response::setDate(void)
+{
+	char buf[100];
+	struct timeval time;
+	struct tm *tm;
+	
+	gettimeofday(&time, NULL);
+	tm = gmtime(&time.time_sec);
+	strftime(buf, 100, "%a, %d %b %Y %H:%M:%S GMT", tm);
+	response.time = std::string(buf);
+
+}
+
+void
+setContent(std::string t)
+{
+	if (t != "")
+	
 }
 
 //리소스에 접근했을 때 실제 파일이 있는지 찾아서 read 를 통해 확인하는 함수
