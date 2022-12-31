@@ -29,7 +29,6 @@ public:
 	}	t_result;
 	std::string	getOrig();
 	std::string	getHead();
-	std::string	getBody();
 	std::string	getTarget();
 	std::string	getVersion();
 	void 		setOrig(std::string &orig);
@@ -57,7 +56,6 @@ private:
 	};
 	std::string	_orig;
 	std::string	_head;	// for debugging purpose
-	std::string	_body;
 	std::string	_target;
 	std::string	_version;	// no need?
 	int 		_pStatus;
@@ -78,7 +76,7 @@ private:
 	void 		checkConnection();
 
 	void		parseBody(size_t &prev);
-	void		parseChunked(size_t &prev);
+	void		parseChunked();
 
 	void 		updateStatus(int status, int pStatus);
 	void		errorStatus(std::string message, int status, int pStatus);

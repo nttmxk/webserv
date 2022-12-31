@@ -2,7 +2,6 @@
 
 std::string Request::getOrig() { return (_orig); }
 std::string Request::getHead() { return (_head); }
-std::string Request::getBody() { return (_body); }
 std::string	Request::getTarget() { return (_target); }
 std::string	Request::getVersion() { return (_version); }
 
@@ -126,7 +125,7 @@ void	Request::parseHeader(size_t &prev)
 	mOrig = getOrig();
 	if (mOrig[prev + 2] == SP)
 		return errorStatus("# Header Line Error <WhiteSpace>\n", 400, pError);
-	next = mOrig.find("\r\n\r\n", prev + 2);
+	next = mOrig.find(CRLF CRLF, prev + 2);
 	if (next == std::string::npos)
 		return errorStatus("# Header Line Error <Npos>\n", 400, pError);
 	mHeader = mOrig.substr(prev + 2, next - prev);
@@ -259,7 +258,7 @@ void 	Request::checkConnection()
 	it = t_result.header.find("connection");
 	if (it == t_result.header.end())
 		return ;
-	if (it->second.compare("close"))
+	if (it->second.compare("close") == true)
 		t_result.close = true;
 }
 
@@ -269,36 +268,71 @@ void 	Request::checkConnection()
  */
 void	Request::parseBody(size_t &prev) // considerate content-size header
 {
-	if (_bodyLength == -1)
-	{
-		_pStatus = pComplete;
-		return ;
-	}
+	/*
+	 * only TE -> _bodyLength = -1 and _chunked = true -> _bodyLength != -1 and _chunked = true
+	 * both No -> _bodyLength = -1 and _chunked = false
+	 * only CL -> _bodyLength >= 0 and _chunked = false
+	 */
 	if (_chunked)
-		return parseChunked(prev);
+		return parseChunked();
 	if (_bodyLength == -1)
 	{
 		_pStatus = pComplete;
 		return ;
 	}
-	_body = getOrig().substr(prev); // append?
-	if (_body.size() >= _bodyLength)
+	t_result.body.append(getOrig().substr(prev));
+	if (t_result.body.size() >= _bodyLength)
 	{
-		if (_body.size() == _bodyLength)
-			_pStatus = pComplete;
-		else
-			; // huh?
+		_pStatus = pComplete;
+		if (t_result.body.size() != _bodyLength)
+			t_result.body.erase(_bodyLength);
 	}
 	else
-		; // huh?
+		; // content length doesn't match.... need more message or 400 bad request + close connection
 }
 
 /**
  * 	@brief	parsing chunked content
  * 	@param	starting position of the content message
  */
-void 	Request::parseChunked(size_t &prev)
-{;}
+void 	Request::parseChunked()
+{
+	std::string			message;
+	size_t				pos;
+	size_t				pos_next;
+	int 				temp_bodyLength;
+
+	if (_bodyLength == -1) // first time here, no more message
+	{
+		_bodyLength = 0;
+		return ;
+	}
+	message = getOrig();
+	pos = message.find(CRLF);
+	if (pos == std::string::npos) // chunked size max also needed
+		return errorStatus("Chunk message first CRLF error", 400, pError);
+
+	std::stringstream ss(message.substr(0, pos));
+	ss >> std::hex >> temp_bodyLength;
+	if (temp_bodyLength == 0) // receiving is done
+	{
+		if (pos != 1)
+			return errorStatus("Chunk message 0 error", 400, pError);
+		_pStatus = pComplete;
+		return ;
+	}
+	// temp_bodyLength > 0 check?
+	// should I check with message.compare(pos + 2 + temp_bodyLength, 2, CRLF) ?
+	pos_next = message.find(CRLF, pos + 2);
+	if (pos_next == std::string::npos)
+		return errorStatus("Chunk message second CRLF error", 400, pError);
+
+	if (pos_next - pos - 2 != temp_bodyLength)
+		return errorStatus("Chunk message length doesn't match", 400, pError);
+	_bodyLength += temp_bodyLength; // client_max_body_size check
+	t_result.body.append(message.substr(pos + 2, temp_bodyLength));
+	// if there is more message after second CRLF, abandon that message for now
+}
 
 /**
  * 	@brief	printing request class
@@ -310,7 +344,6 @@ void	Request::printRequest()
 			  "[Request Line]" <<
 			  "\nTarget:" << getTarget() << // soon to be deleted
 			  "\nVersion:" << getVersion() <<
-			  "\n[Body Info]\n" << getBody() <<
 			  std::endl;
 	else
 		std::cout <<
@@ -358,7 +391,6 @@ Request::Request(const Request &orig) {
 Request& Request::operator=(const Request &orig) {
 	_orig = orig._orig;
 	_head = orig._head;
-	_body = orig._body;
 	_target = orig._target;
 	_version = orig._version;
 	_pStatus = orig._pStatus;
