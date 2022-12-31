@@ -6,7 +6,7 @@ std::string Request::getBody() { return (_body); }
 std::string	Request::getTarget() { return (_target); }
 std::string	Request::getVersion() { return (_version); }
 
-/*
+/**
  * 	@brief	Set original message from client to Request class
  * 	@param	original message from client
  */
@@ -14,7 +14,7 @@ void 		Request::setOrig(std::string &orig) {
 	_orig = orig;
 }
 
-/*
+/**
  *	@brief	Update status code and parsing status
  *	@param	status code, parsing status to update
  */
@@ -23,7 +23,7 @@ void 		Request::updateStatus(int status, int pStatus) {
 	_pStatus = pStatus;
 }
 
-/*
+/**
  * 	@brief	Parsing original message from client
  */
 void	Request::parseMessage()
@@ -38,7 +38,7 @@ void	Request::parseMessage()
 		parseBody(pos);
 }
 
-/*
+/**
  *	@brief	Parsing request line
  *	@param
  */
@@ -66,7 +66,7 @@ void	Request::parseRequestLine(size_t &pos)
 		return errorStatus("# Control Line Error\n", 501, pError); // Not Implemented
 }
 
-/*
+/**
  * 	@brief	Parsing control line
  * 	@param	control line message, type of the method
  */
@@ -99,7 +99,7 @@ void Request::parseControl(std::string &mControl, std::string method)
 		_pStatus = pHeader;
 }
 
-/*
+/**
  * 	@brief	checking http version
  */
 void	Request::checkVersion()
@@ -113,7 +113,7 @@ void	Request::checkVersion()
 		return updateStatus(505, pError); // HTTP Version Not Supported
 }
 
-/*
+/**
  * 	@brief	parsing header
  * 	@param	starting position of the header message
  */
@@ -137,7 +137,7 @@ void	Request::parseHeader(size_t &prev)
 		_pStatus = pBody;
 }
 
-/*
+/**
  * 	@brief	Tokenizing header field name and header field value
  */
 void	Request::tokenizeHeader()
@@ -181,7 +181,7 @@ void	Request::tokenizeHeader()
 	verifyHeader();
 }
 
-/*
+/**
  * 	@brief	Determining if the character is optional whitespace or not
  * 	@param	the character to determine
  */
@@ -192,7 +192,7 @@ bool	Request::isOWS(int c)
 	return false;
 }
 
-/*
+/**
  * 	@brief	Verifying host, content-length, connection header
  */
 void 	Request::verifyHeader()
@@ -205,7 +205,7 @@ void 	Request::verifyHeader()
 		checkConnection();
 }
 
-/*
+/**
  * 	@brief	checking host header
  */
 void 	Request::checkHost()
@@ -219,7 +219,7 @@ void 	Request::checkHost()
 	t_result.host = it->second;
 }
 
-/*
+/**
  *	@brief	checking content-length header and chunked option
  */
 void 	Request::checkBodyLength()
@@ -236,6 +236,7 @@ void 	Request::checkBodyLength()
 		std::stringstream ss(it->second);
 		ss >> _bodyLength; // client_max_body_size check
 	}
+
 	it = t_result.header.find("transfer-encoding");
 	if (it != t_result.header.end())
 	{
@@ -248,7 +249,7 @@ void 	Request::checkBodyLength()
 	}
 }
 
-/*
+/**
  * 	@brief	checking connection header
  */
 void 	Request::checkConnection()
@@ -262,7 +263,7 @@ void 	Request::checkConnection()
 		t_result.close = true;
 }
 
-/*
+/**
  * 	@brief	parsing content message
  * 	@param	starting position of the content message
  */
@@ -275,6 +276,11 @@ void	Request::parseBody(size_t &prev) // considerate content-size header
 	}
 	if (_chunked)
 		return parseChunked(prev);
+	if (_bodyLength == -1)
+	{
+		_pStatus = pComplete;
+		return ;
+	}
 	_body = getOrig().substr(prev); // append?
 	if (_body.size() >= _bodyLength)
 	{
@@ -287,14 +293,14 @@ void	Request::parseBody(size_t &prev) // considerate content-size header
 		; // huh?
 }
 
-/*
+/**
  * 	@brief	parsing chunked content
  * 	@param	starting position of the content message
  */
 void 	Request::parseChunked(size_t &prev)
 {;}
 
-/*
+/**
  * 	@brief	printing request class
  */
 void	Request::printRequest()
@@ -329,7 +335,7 @@ void	Request::printRequest()
 	}
 }
 
-/*
+/**
  * 	@brief	set error status and print error message
  * 	@param	message to print, status code, parsing status
  */
