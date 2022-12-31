@@ -8,15 +8,26 @@ std::string	Request::getVersion() { return (_version); }
 int 		Request::getMethod() { return (_method); }
 int 		Request::getStatus() { return (_status); }
 
+/*
+ * 	@brief	Set original message from client to Request class
+ * 	@param	original message from client
+ */
 void 		Request::setOrig(std::string &orig) {
 	_orig = orig;
 }
 
+/*
+ *	@brief	Update status code and parsing status
+ *	@param	status code, parsing status to update
+ */
 void 		Request::updateStatus(int status, int pStatus) {
 	_status = status;
 	_pStatus = pStatus;
 }
 
+/*
+ * 	@brief	Parsing original message from client
+ */
 void	Request::parseMessage()
 {
 	size_t	pos;
@@ -29,6 +40,10 @@ void	Request::parseMessage()
 		parseBody(pos);
 }
 
+/*
+ *	@brief	Parsing request line
+ *	@param
+ */
 void	Request::parseRequestLine(size_t &pos)
 {
 	std::string	mControl;
@@ -53,6 +68,10 @@ void	Request::parseRequestLine(size_t &pos)
 		return errorStatus("# Control Line Error\n", 501, pError); // Not Implemented
 }
 
+/*
+ * 	@brief	Parsing control line
+ * 	@param	control line message, type of the method
+ */
 void Request::parseControl(std::string &mControl, std::string method)
 {
 	size_t	len_method;
@@ -82,6 +101,9 @@ void Request::parseControl(std::string &mControl, std::string method)
 		_pStatus = pHeader;
 }
 
+/*
+ * 	@brief	checking http version
+ */
 void	Request::checkVersion()
 {
 	std::string version;
@@ -93,6 +115,10 @@ void	Request::checkVersion()
 		return updateStatus(505, pError); // HTTP Version Not Supported
 }
 
+/*
+ * 	@brief	parsing header
+ * 	@param	starting position of the header message
+ */
 void	Request::parseHeader(size_t &prev)
 {
 	std::string	mOrig;
@@ -113,6 +139,9 @@ void	Request::parseHeader(size_t &prev)
 		_pStatus = pBody;
 }
 
+/*
+ * 	@brief	Tokenizing header field name and header field value
+ */
 void	Request::tokenizeHeader()
 {
 	std::string mHeader;
@@ -154,6 +183,10 @@ void	Request::tokenizeHeader()
 	verifyHeader();
 }
 
+/*
+ * 	@brief	Determining if the character is optional whitespace or not
+ * 	@param	the character to determine
+ */
 bool	Request::isOWS(int c)
 {
 	if (c == SP || c == HTAB)
@@ -162,11 +195,7 @@ bool	Request::isOWS(int c)
 }
 
 /*
- * host
- * connection
- * content-length
- * transfer-encoding
- * content-type || Cookie
+ * 	@brief	Verifying host, content-length, connection header
  */
 void 	Request::verifyHeader()
 {
@@ -178,6 +207,9 @@ void 	Request::verifyHeader()
 		checkConnection();
 }
 
+/*
+ * 	@brief	checking host header
+ */
 void 	Request::checkHost()
 {
 	std::map<std::string, std::string>::iterator it;
@@ -189,6 +221,9 @@ void 	Request::checkHost()
 	t_result.host = it->second;
 }
 
+/*
+ *	@brief	checking content-length header and chunked option
+ */
 void 	Request::checkBodyLength()
 {
 	std::map<std::string, std::string>::iterator it;
@@ -215,6 +250,9 @@ void 	Request::checkBodyLength()
 	}
 }
 
+/*
+ * 	@brief	checking connection header
+ */
 void 	Request::checkConnection()
 {
 	std::map<std::string, std::string>::iterator it;
@@ -226,7 +264,11 @@ void 	Request::checkConnection()
 		t_result.close = true;
 }
 
-void	Request::parseBody(size_t &prev) // considerate content-size t_result.header
+/*
+ * 	@brief	parsing content message
+ * 	@param	starting position of the content message
+ */
+void	Request::parseBody(size_t &prev) // considerate content-size header
 {
 	if (_bodyLength == -1)
 	{
@@ -247,9 +289,16 @@ void	Request::parseBody(size_t &prev) // considerate content-size t_result.heade
 		; // huh?
 }
 
+/*
+ * 	@brief	parsing chunked content
+ * 	@param	starting position of the content message
+ */
 void 	Request::parseChunked(size_t &prev)
 {;}
 
+/*
+ * 	@brief	printing request class
+ */
 void	Request::printRequest()
 {
 	if (_status == 200)
@@ -258,7 +307,6 @@ void	Request::printRequest()
 			  "\nMethod:" << getMethod() <<
 			  "\nTarget:" << getTarget() <<
 			  "\nVersion:" << getVersion() <<
-//			  "\n[Header Info]\n" << getHead() <<
 			  "\n[Body Info]\n" << getBody() <<
 			  std::endl;
 	else
@@ -274,6 +322,10 @@ void	Request::printRequest()
 	}
 }
 
+/*
+ * 	@brief	set error status and print error message
+ * 	@param	message to print, status code, parsing status
+ */
 void	Request::errorStatus(std::string message, int status, int pStatus)
 {
 	updateStatus(status, pStatus);
