@@ -62,21 +62,25 @@ Connection::connectionLoop(InfoServer &serverInfo)
 				{
 					char buffer[BUFFER_SIZE];
 					int valRead = read(currEvent->ident, buffer, sizeof(buffer));
-					if (valRead == FAIL)
+					if (valRead <= 0)
 					{
-						std::cerr << "Read error";
-						exit(1);
+						if (valRead < 0) {
+							std::cerr << "Read error";
+							exit(1);
+						}
+						close(currEvent->ident);
 					}
 					else
 					{
 						buffer[valRead] = '\0';
-						std::cout << "Received data from " << currEvent->ident << ": " << buffer << "\n";
+						_clientReq += buffer;
+						std::cout << "Received data from " << currEvent->ident << ": " << _clientReq << "\n";
 					}
 				}
 			}
 
 			/* write event */
-			else if (currEvent->filter & EVFILT_WRITE)
+			if (currEvent->filter & EVFILT_WRITE)
 			{
 				Response responser;
 				responser.responseToClient(_clientSocket, serverInfo);

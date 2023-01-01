@@ -20,6 +20,7 @@ class Connection
 		InfoServer _serverInfo;
 		Multiplex _eventManager;
 		int _clientSocket;
+		std::string _clientReq;
 
 	public:
 		Connection();
