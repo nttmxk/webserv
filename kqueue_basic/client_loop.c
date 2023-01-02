@@ -12,7 +12,7 @@ int main(void)
 {
 	int sock = 0; long valread;
 	struct sockaddr_in serv_addr;
-	char *message = "GET / HTTP/1.0";
+	char *message = "GET";
 	char buffer[1024] = {0};
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{

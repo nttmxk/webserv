@@ -90,7 +90,11 @@ Connection::connectionLoop(InfoServer &serverInfo)
 				std::map<int, std::string>::iterator it = _clientsMap.find(currEvent->ident);
 				if (it != _clientsMap.end()) {
 					Response responser;
-					responser.responseToClient(currEvent->ident, serverInfo);
+					if (it->second == "GET") {
+						//parsing needed
+						it->second = "";
+						responser.responseToClient(currEvent->ident, serverInfo);
+					}
 				}
 			}
 		}

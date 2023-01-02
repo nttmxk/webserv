@@ -16,7 +16,7 @@ Response::responseToClient(int clientSocket, InfoServer &serverInfo)
 
 	long valWrite = write(clientSocket, resMsg.c_str(), resMsg.size());
 	if (valWrite == (long)resMsg.size())
-		std::cout << "SERVER RESPONSE SENT\n";
+		std::cout << "";
 	// close(clientSocket);
 }
 
