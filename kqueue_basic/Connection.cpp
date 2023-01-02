@@ -32,18 +32,18 @@ Connection::connectionLoop(InfoServer &serverInfo)
 			if (currEvent->flags & EV_ERROR) {
 				if (currEvent->ident == static_cast<uintptr_t>(serverInfo._serverSocket))
 				{
-					std::cerr << "server error : \n";
+					std::cerr << "server error\n";
 					break ;
 				}
 				else if (currEvent->ident == static_cast<uintptr_t>(_clientSocket))
 				{
-					std::cerr << "client error : \n";
+					std::cerr << "client error\n";
 					close(currEvent->ident);
 				}
 			}
 
 			/* read event */
-			else if (currEvent->filter & EVFILT_READ)
+			else if (currEvent->filter == EVFILT_READ)
 			{
 				if (currEvent->ident == static_cast<uintptr_t>(serverInfo._serverSocket))
 				{
@@ -62,9 +62,9 @@ Connection::connectionLoop(InfoServer &serverInfo)
 				{
 					char buffer[BUFFER_SIZE];
 					int valRead = read(currEvent->ident, buffer, sizeof(buffer));
-					if (valRead <= 0)
+					if (valRead <= 0 && errno != EAGAIN)
 					{
-						if (valRead < 0) {
+						if (valRead < 0 && errno != EAGAIN) {
 							std::cerr << "Read error";
 							exit(1);
 						}
@@ -80,7 +80,7 @@ Connection::connectionLoop(InfoServer &serverInfo)
 			}
 
 			/* write event */
-			if (currEvent->filter & EVFILT_WRITE)
+			else if (currEvent->filter == EVFILT_WRITE)
 			{
 				Response responser;
 				responser.responseToClient(_clientSocket, serverInfo);
