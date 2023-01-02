@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     int sock = 0;
     long valread;
     struct sockaddr_in serv_addr;
-    char *req = "/home";
+    char *req = "GET";
     char buffer[1024] = {0};
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {

@@ -46,8 +46,9 @@ Connection::connectionLoop()
 				}
 				else if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
-					close(currEvent->ident);
 					std::cerr << " client error case \n";
+					close(currEvent->ident);
+					_clientMap.erase(currEvent->ident);
 					throw ConnectionError();
 				}
 			}
@@ -80,7 +81,7 @@ Connection::connectionLoop()
 
 				else if (_clientMap.find(currEvent->ident) != _clientMap.end()) {
 					// char buffer[BUFFER_SIZE] = {0};
-					char buffer[1] = {0};
+					char buffer[2] = {0};
 					// std::cout << "	clientMap size : " << _clientMap.size() << "\n";
 
 					int valRead = read(currEvent->ident, buffer, sizeof(buffer));
@@ -95,9 +96,8 @@ Connection::connectionLoop()
 					else
 					{
 						buffer[valRead] = '\0';
-						_clientReq += buffer;
-						std::cout << "Received requset from " << currEvent->ident << ": " << _clientReq << "\n";
 						_clientMap[currEvent->ident].reqMsg += buffer;
+						std::cout << "Received requset from " << currEvent->ident << ": " << _clientMap[currEvent->ident].reqMsg << "\n";
 					}
 				}
 			}
@@ -105,9 +105,15 @@ Connection::connectionLoop()
 			/* write event */
 			else if (currEvent->filter == EVFILT_WRITE)
 			{
-				if (_clientMap.find(currEvent->ident) != _clientMap.end()) {
+				std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
+				if (it != _clientMap.end()) {
 					Response responser;
-					responser.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
+					if (it->second.reqMsg == "GET")
+					{
+						// parsing needed
+						it->second.reqMsg = "";
+						responser.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
+					}
 				}
 			}
 		}
