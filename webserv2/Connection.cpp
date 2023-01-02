@@ -53,7 +53,7 @@ Connection::connectionLoop()
 			}
 
 			/* read event */
-			else if (currEvent->filter & EVFILT_READ)
+			else if (currEvent->filter == EVFILT_READ)
 			{
 				if (_serverMap.find(currEvent->ident) != _serverMap.end())
 				{
@@ -83,11 +83,11 @@ Connection::connectionLoop()
 					// std::cout << "	clientMap size : " << _clientMap.size() << "\n";
 
 					int valRead = read(currEvent->ident, buffer, sizeof(buffer));
-					if (valRead == FAIL)// && errno != EAGAIN)
+					if (valRead == FAIL)
 					{
-						// std::cerr << " from client " << currEvent->ident ;
-						// std::cerr << " Error : read() \n";
-						// throw ConnectionError();
+						std::cerr << " from client " << currEvent->ident ;
+						std::cerr << " Error : read() \n";
+						throw ConnectionError();
 					}
 					else
 					{
@@ -99,7 +99,7 @@ Connection::connectionLoop()
 			}
 
 			/* write event */
-			else if (currEvent->filter & EVFILT_WRITE)
+			else if (currEvent->filter == EVFILT_WRITE)
 			{
 				if (_clientMap.find(currEvent->ident) != _clientMap.end()) {
 					Response responser;
