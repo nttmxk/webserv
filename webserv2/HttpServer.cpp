@@ -42,10 +42,10 @@ HttpServer::openServer()
 		if (setsockopt(it->_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == FAIL)
 			throw HttpServerError();
 
-		// if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == FAIL) {
-		// 	std::cerr << "serverSocket fcntl() :";
-		// 	return (FAIL);
-		// }
+		if (fcntl(it->_serverSocket, F_SETFL, O_NONBLOCK) == FAIL) {
+			std::cerr << "serverSocket fcntl() :";
+			return (FAIL);
+		}
 
 		if (bind(it->_serverSocket, (sockaddr *)&it->_serverAddr, it->_serverAddrLen) != SUCCESS)
 			throw HttpServerError();

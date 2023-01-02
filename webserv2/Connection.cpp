@@ -38,9 +38,9 @@ Connection::connectionLoop()
 			currEvent = const_cast<struct kevent const *>(&(_eventManager.getEventList()[i]));
 
 			/* error case */
-			if ((currEvent->flags & EV_ERROR || currEvent->flags & EV_EOF)) {
+			if (currEvent->flags & EV_ERROR) {
 				if (_serverMap.find(currEvent->ident) != _serverMap.end()) {
-					close(currEvent->ident);
+					// close(currEvent->ident);
 					std::cerr << " server error case \n";
 					throw ConnectionError();
 				}
@@ -75,11 +75,12 @@ Connection::connectionLoop()
 					infoClient._clientSocket = clientSocket;
 					infoClient._server = &_serverMap[currEvent->ident];
 					_clientMap.insert(std::pair<int, InfoClient>(clientSocket, infoClient));
+					_clientMap[clientSocket].reqMsg = "";
 				}
 
 				else if (_clientMap.find(currEvent->ident) != _clientMap.end()) {
-					char buffer[BUFFER_SIZE] = {0};
-
+					// char buffer[BUFFER_SIZE] = {0};
+					char buffer[1] = {0};
 					// std::cout << "	clientMap size : " << _clientMap.size() << "\n";
 
 					int valRead = read(currEvent->ident, buffer, sizeof(buffer));
@@ -87,13 +88,16 @@ Connection::connectionLoop()
 					{
 						std::cerr << " from client " << currEvent->ident ;
 						std::cerr << " Error : read() \n";
-						throw ConnectionError();
+						//send error page
+						close(currEvent->ident);
+						_clientMap.erase(currEvent->ident);
 					}
 					else
 					{
 						buffer[valRead] = '\0';
-						std::cout << "Received data from " << currEvent->ident << ": " << buffer << "\n";
-						_clientMap[currEvent->ident].reqMsg = buffer;
+						_clientReq += buffer;
+						std::cout << "Received requset from " << currEvent->ident << ": " << _clientReq << "\n";
+						_clientMap[currEvent->ident].reqMsg += buffer;
 					}
 				}
 			}
