@@ -325,10 +325,10 @@ Config::serverInit(int start, int end)
 // }
 
 
-// const char*
-// Config::FileNotFoundException::what() const throw(){
-// 	return "Exception thrown: could not open configuration file";
-// }
+const char*
+Config::FileNotFoundException::what() const throw(){
+	return "Exception thrown: could not open configuration file";
+}
 
 // using vector_int_type = std::vector<int>;
 // std::ostream& operator << (std::ostream& os, const vector_int_type& vect) {
