@@ -27,15 +27,10 @@ public:
 		std::string query;
 		std::string host;
 	}	t_result;
-
-	std::map<std::string, std::string>	header;
 	std::string	getOrig();
 	std::string	getHead();
-	std::string	getBody();
 	std::string	getTarget();
 	std::string	getVersion();
-	int 		getMethod();
-	int 		getStatus();
 	void 		setOrig(std::string &orig);
 
 	void		parseMessage();
@@ -60,19 +55,17 @@ private:
 		DELETE
 	};
 	std::string	_orig;
-	std::string	_head;
-	std::string	_body;
+	std::string	_head;	// for debugging purpose
 	std::string	_target;
-	std::string	_version;
-	int			_status;
+	std::string	_version;	// no need?
 	int 		_pStatus;
-	int			_method;
-	void		parseRequestLine(size_t &pos);
 	int 		_bodyLength;
 	bool		_chunked;
+	void		parseRequestLine(size_t &pos);
 	void		parseStartLine(size_t &pos);
 	void		checkVersion();
 	void		parseControl(std::string &mControl, std::string method);
+
 	void		parseHeader(size_t &prev);
 	void		tokenizeHeader();
 	bool		isOWS(int c);
@@ -81,8 +74,10 @@ private:
 	void 		checkHost();
 	void 		checkBodyLength();
 	void 		checkConnection();
+
 	void		parseBody(size_t &prev);
-	void		parseChunked(size_t &prev);
+	void		parseChunked();
+
 	void 		updateStatus(int status, int pStatus);
 	void		errorStatus(std::string message, int status, int pStatus);
 };

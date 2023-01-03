@@ -2,21 +2,29 @@
 
 std::string Request::getOrig() { return (_orig); }
 std::string Request::getHead() { return (_head); }
-std::string Request::getBody() { return (_body); }
 std::string	Request::getTarget() { return (_target); }
 std::string	Request::getVersion() { return (_version); }
-int 		Request::getMethod() { return (_method); }
-int 		Request::getStatus() { return (_status); }
 
+/**
+ * 	@brief	Set original message from client to Request class
+ * 	@param	original message from client
+ */
 void 		Request::setOrig(std::string &orig) {
 	_orig = orig;
 }
 
+/**
+ *	@brief	Update status code and parsing status
+ *	@param	status code, parsing status to update
+ */
 void 		Request::updateStatus(int status, int pStatus) {
-	_status = status;
+	t_result.status = status;
 	_pStatus = pStatus;
 }
 
+/**
+ * 	@brief	Parsing original message from client
+ */
 void	Request::parseMessage()
 {
 	size_t	pos;
@@ -29,6 +37,10 @@ void	Request::parseMessage()
 		parseBody(pos);
 }
 
+/**
+ *	@brief	Parsing request line
+ *	@param
+ */
 void	Request::parseRequestLine(size_t &pos)
 {
 	std::string	mControl;
@@ -53,6 +65,10 @@ void	Request::parseRequestLine(size_t &pos)
 		return errorStatus("# Control Line Error\n", 501, pError); // Not Implemented
 }
 
+/**
+ * 	@brief	Parsing control line
+ * 	@param	control line message, type of the method
+ */
 void Request::parseControl(std::string &mControl, std::string method)
 {
 	size_t	len_method;
@@ -62,26 +78,29 @@ void Request::parseControl(std::string &mControl, std::string method)
 	if (mControl.compare(0, len_method, method) != 0 || mControl[len_method] != SP)
 		return errorStatus("# Control Line Error <" + method + ">\n", 501, pError); // Not Implemented
 	if (method == "GET")
-		_method = GET;
+		t_result.method = GET;
 	else if (method == "POST")
-		_method = POST;
+		t_result.method = POST;
 	else
-		_method = DELETE;
+		t_result.method = DELETE;
 	pos = mControl.find(SP, len_method + 1);
 	if (pos == std::string::npos)
 		return errorStatus("# Control Line Error <" + method + "/Npos>\n", 400, pError);
 
-	_target = mControl.substr(len_method + 1, pos - len_method - 1); // Status 414 need to be checkedv
+	_target = mControl.substr(len_method + 1, pos - len_method - 1); // Status 414 need to be checked
 //	Uri uriParser;
 //	uriParser.parseTarget(_target);
 
 	_version = mControl.substr(pos + 1);
 	checkVersion();
 
-	if (_status == 200)
+	if (t_result.status == 200)
 		_pStatus = pHeader;
 }
 
+/**
+ * 	@brief	checking http version
+ */
 void	Request::checkVersion()
 {
 	std::string version;
@@ -93,6 +112,10 @@ void	Request::checkVersion()
 		return updateStatus(505, pError); // HTTP Version Not Supported
 }
 
+/**
+ * 	@brief	parsing header
+ * 	@param	starting position of the header message
+ */
 void	Request::parseHeader(size_t &prev)
 {
 	std::string	mOrig;
@@ -102,17 +125,20 @@ void	Request::parseHeader(size_t &prev)
 	mOrig = getOrig();
 	if (mOrig[prev + 2] == SP)
 		return errorStatus("# Header Line Error <WhiteSpace>\n", 400, pError);
-	next = mOrig.find("\r\n\r\n", prev + 2);
+	next = mOrig.find(CRLF CRLF, prev + 2);
 	if (next == std::string::npos)
 		return errorStatus("# Header Line Error <Npos>\n", 400, pError);
 	mHeader = mOrig.substr(prev + 2, next - prev);
 	_head = mHeader;
 	tokenizeHeader();
 	prev = next + 4;
-	if (_status == 200)
+	if (t_result.status == 200)
 		_pStatus = pBody;
 }
 
+/**
+ * 	@brief	Tokenizing header field name and header field value
+ */
 void	Request::tokenizeHeader()
 {
 	std::string mHeader;
@@ -146,12 +172,18 @@ void	Request::tokenizeHeader()
 		while (isOWS(mHeader[pos_end]))
 			--pos_end;
 		fieldValue = mHeader.substr(pos_start, pos_end - pos_start + 1);
-		header[fieldName] = fieldValue;
+		std::transform(fieldValue.begin(), fieldValue.end(), fieldValue.begin(), ::tolower);
+		std::transform(fieldName.begin(), fieldName.end(), fieldName.begin(), ::tolower);
+		t_result.header[fieldName] = fieldValue;
 		pos_nl_prev = pos_nl_next;
 	}
 	verifyHeader();
 }
 
+/**
+ * 	@brief	Determining if the character is optional whitespace or not
+ * 	@param	the character to determine
+ */
 bool	Request::isOWS(int c)
 {
 	if (c == SP || c == HTAB)
@@ -159,12 +191,8 @@ bool	Request::isOWS(int c)
 	return false;
 }
 
-/*
- * host
- * connection
- * content-length
- * transfer-encoding
- * content-type || Cookie
+/**
+ * 	@brief	Verifying host, content-length, connection header
  */
 void 	Request::verifyHeader()
 {
@@ -176,23 +204,29 @@ void 	Request::verifyHeader()
 		checkConnection();
 }
 
+/**
+ * 	@brief	checking host header
+ */
 void 	Request::checkHost()
 {
 	std::map<std::string, std::string>::iterator it;
 
-	it = header.find("Host");
-	if (it == header.end())
+	it = t_result.header.find("host");
+	if (it == t_result.header.end())
 		return errorStatus("Host cannot be empty", 400, pError);
 //	if (verifyHost())
 	t_result.host = it->second;
 }
 
+/**
+ *	@brief	checking content-length header and chunked option
+ */
 void 	Request::checkBodyLength()
 {
 	std::map<std::string, std::string>::iterator it;
 
-	it = header.find("Content-Length"); // Upper-case?
-	if (it == header.end())
+	it = t_result.header.find("content-length");
+	if (it == t_result.header.end())
 		_bodyLength = -1;
 	else
 	{
@@ -201,8 +235,9 @@ void 	Request::checkBodyLength()
 		std::stringstream ss(it->second);
 		ss >> _bodyLength; // client_max_body_size check
 	}
-	it = header.find("Transfer-Encoding");
-	if (it != header.end())
+
+	it = t_result.header.find("transfer-encoding");
+	if (it != t_result.header.end())
 	{
 		if (_bodyLength != -1)
 			return errorStatus("CL and TE are both exist", 400, pError);
@@ -213,72 +248,139 @@ void 	Request::checkBodyLength()
 	}
 }
 
+/**
+ * 	@brief	checking connection header
+ */
 void 	Request::checkConnection()
 {
 	std::map<std::string, std::string>::iterator it;
 
-	it = header.find("Connection");
-	if (it == header.end())
+	it = t_result.header.find("connection");
+	if (it == t_result.header.end())
 		return ;
-	if (it->second.compare("close"))
+	if (it->second.compare("close") == true)
 		t_result.close = true;
 }
 
+/**
+ * 	@brief	parsing content message
+ * 	@param	starting position of the content message
+ */
 void	Request::parseBody(size_t &prev) // considerate content-size header
 {
+	/*
+	 * only TE -> _bodyLength = -1 and _chunked = true -> _bodyLength != -1 and _chunked = true
+	 * both No -> _bodyLength = -1 and _chunked = false
+	 * only CL -> _bodyLength >= 0 and _chunked = false
+	 */
+	if (_chunked)
+		return parseChunked();
 	if (_bodyLength == -1)
 	{
 		_pStatus = pComplete;
 		return ;
 	}
-	if (_chunked)
-		return parseChunked(prev);
-	_body = getOrig().substr(prev); // append?
-	if (_body.size() >= _bodyLength)
+	t_result.body.append(getOrig().substr(prev));
+	if (t_result.body.size() >= _bodyLength)
 	{
-		if (_body.size() == _bodyLength)
-			_pStatus = pComplete;
-		else
-			; // huh?
+		_pStatus = pComplete;
+		if (t_result.body.size() != _bodyLength)
+			t_result.body.erase(_bodyLength);
 	}
 	else
-		; // huh?
+		; // content length doesn't match.... need more message or 400 bad request + close connection
 }
 
-void 	Request::parseChunked(size_t &prev)
-{;}
+/**
+ * 	@brief	parsing chunked content
+ * 	@param	starting position of the content message
+ */
+void 	Request::parseChunked()
+{
+	std::string			message;
+	size_t				pos;
+	size_t				pos_next;
+	int 				temp_bodyLength;
 
+	if (_bodyLength == -1) // first time here, no more message
+	{
+		_bodyLength = 0;
+		return ;
+	}
+	message = getOrig();
+	pos = message.find(CRLF);
+	if (pos == std::string::npos) // chunked size max also needed
+		return errorStatus("Chunk message first CRLF error", 400, pError);
+
+	std::stringstream ss(message.substr(0, pos));
+	ss >> std::hex >> temp_bodyLength;
+	if (temp_bodyLength == 0) // receiving is done
+	{
+		if (pos != 1)
+			return errorStatus("Chunk message 0 error", 400, pError);
+		_pStatus = pComplete;
+		return ;
+	}
+	// temp_bodyLength > 0 check?
+	// should I check with message.compare(pos + 2 + temp_bodyLength, 2, CRLF) ?
+	pos_next = message.find(CRLF, pos + 2);
+	if (pos_next == std::string::npos)
+		return errorStatus("Chunk message second CRLF error", 400, pError);
+
+	if (pos_next - pos - 2 != temp_bodyLength)
+		return errorStatus("Chunk message length doesn't match", 400, pError);
+	_bodyLength += temp_bodyLength; // client_max_body_size check
+	t_result.body.append(message.substr(pos + 2, temp_bodyLength));
+	// if there is more message after second CRLF, abandon that message for now
+}
+
+/**
+ * 	@brief	printing request class
+ */
 void	Request::printRequest()
 {
-	if (_status == 200)
+	if (t_result.status == 200)
 		std::cout <<
 			  "[Request Line]" <<
-			  "\nMethod:" << getMethod() <<
-			  "\nTarget:" << getTarget() <<
+			  "\nTarget:" << getTarget() << // soon to be deleted
 			  "\nVersion:" << getVersion() <<
-//			  "\n[Header Info]\n" << getHead() <<
-			  "\n[Body Info]\n" << getBody() <<
 			  std::endl;
 	else
 		std::cout <<
-			"[Status]:" <<
-			_status <<
+			"\n[Status]:" <<
+			t_result.status <<
 			"\n[Reason]:" <<
 			_pStatus << // status <-> error map needed
 			std::endl;
-	std::cout << "[HEADER MAP]\n";
-	for (std::map<std::string, std::string>::iterator it = header.begin(); it != header.end() ; ++it) {
+	std::cout << "[Result Info]" <<
+				"\nMethod:" << t_result.method <<
+				"\nVersion:" << t_result.version <<
+				"\nStatus:" << t_result.status <<
+				"\nClose:" << t_result.close <<
+				"\nBody:" << t_result.body <<
+				"\nPath:" << t_result.path <<
+				"\nQuery:" << t_result.query <<
+				"\nHost:" << t_result.host
+				;
+	std::cout << "[Header Info]\n";
+	for (std::map<std::string, std::string>::iterator it = t_result.header.begin(); it != t_result.header.end() ; ++it) {
 		std::cout << it->first << ":[" << it->second << "]\n";
 	}
 }
 
+/**
+ * 	@brief	set error status and print error message
+ * 	@param	message to print, status code, parsing status
+ */
 void	Request::errorStatus(std::string message, int status, int pStatus)
 {
 	updateStatus(status, pStatus);
 	std::cout << message;
 }
 
-Request::Request(): _status(200), _pStatus(pRequest), _bodyLength(0), _chunked(false) {}
+Request::Request(): _pStatus(pRequest), _bodyLength(0), _chunked(false) {
+	t_result.status = 200;
+}
 
 Request::~Request() {}
 
@@ -289,12 +391,9 @@ Request::Request(const Request &orig) {
 Request& Request::operator=(const Request &orig) {
 	_orig = orig._orig;
 	_head = orig._head;
-	_body = orig._body;
 	_target = orig._target;
 	_version = orig._version;
-	_status = orig._status;
 	_pStatus = orig._pStatus;
-	_method = orig._method;
-	header = orig.header;
+	t_result = orig.t_result;
 	return (*this);
 }
