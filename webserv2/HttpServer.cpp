@@ -55,7 +55,6 @@ HttpServer::openServer()
 {
 	std::vector<InfoServer>::iterator it;
 	for (it = _infoServers.begin(); it != _infoServers.end(); ++it) {
-		std::cout << "openserver!\n\n";
 		it->_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 		if (it->_serverSocket < 0)
 			throw HttpServerError();
