@@ -1,6 +1,6 @@
 NAME		=	webserv
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -std=c++11 -pedantic
+CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic
 SRCS		=	main.cpp \
 				webserv2/HttpServer.cpp \
 				webserv2/Connection.cpp \
