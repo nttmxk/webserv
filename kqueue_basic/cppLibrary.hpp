@@ -7,6 +7,7 @@
 #include <sys/event.h>
 #include <sys/types.h>
 #include <vector>
+#include <map>
 #include <iterator>
 #include <iostream>
 #include <string>
@@ -15,11 +16,4 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <ctime>
-#include <map>
-#include <vector>
-#include <algorithm>
-#include <iterator>
-#include <sstream>
-
 #endif

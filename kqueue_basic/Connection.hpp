@@ -19,7 +19,8 @@ class Connection
 	private:
 		InfoServer _serverInfo;
 		Multiplex _eventManager;
-		int _clientSocket;
+		std::map<int, std::string> _clientsMap; // map for client socket:data
+		std::string _clientReq;
 
 	public:
 		Connection();

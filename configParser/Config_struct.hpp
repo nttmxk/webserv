@@ -33,7 +33,7 @@ struct ServerInfo
 	std::string serverName;
 	std::map<std::string, std::vector<int> > errorPages;
 	std::string host;
-	std::string port;
+	int port;
 	int maxRequestBodySize;
 
 };

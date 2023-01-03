@@ -6,6 +6,8 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+#include <sys/event.h>
 
 #define PORT 8080
 
@@ -14,7 +16,7 @@ int main(int argc, char const *argv[])
     int sock = 0;
     long valread;
     struct sockaddr_in serv_addr;
-    char *hello = "Hello from client";
+    char *req = "GET";
     char buffer[1024] = {0};
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -39,9 +41,11 @@ int main(int argc, char const *argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-    send(sock, hello, strlen(hello), 0);
-    printf("Hello message sent\n");
+    send(sock, req, strlen(req), 0);
+    printf("req message sent\n");
+    // fcntl(sock, F_SETFL, O_NONBLOCK);
     valread = read(sock, buffer, 1024);
+    buffer[valread]= 0;
     printf("%s\n", buffer);
     return 0;
 }

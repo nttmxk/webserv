@@ -7,16 +7,18 @@
 
 #include "Define.hpp"
 #include "InfoServer.hpp"
+#include "InfoClient.hpp"
 #include "HttpResInfo.hpp"
 
 class Response : public HttpResInfo
 {
 	public:
-		void responseToClient(int clientSocket, InfoServer &serverInfo);
+		void responseToClient(int clientSocket, InfoClient infoClient);
 		std::string makeResponseMsg();
-		std::string make2XXRes();
-		std::string make4XXRes();
-		std::string make5XXRes();
+		// std::string httpRes2XX();
+		// std::string httpRes3XX();
+		// std::string httpRes4XX();
+		// std::string httpRes500();
 };
 
 #endif

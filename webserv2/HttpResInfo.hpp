@@ -23,19 +23,22 @@
 class HttpResInfo
 {
 	protected:
-		std::string _httpVersion = "HTTP/1.1";
-		int _statusCode = 0;
-		std::string _statusMsg = "";
-		std::string _connection = ""; //keep-alive etc
-		std::string _date = timeStamp();
-		std::string _server = "webserv";
-		std::string _contentType = ""; //text/html etc
-		std::string _transferEncoding = ""; //chunked etc
-		unsigned int _contentLength = 0;
-		std::string _contentEncoding = ""; //gzip etc
-		std::string _resBody = ""; // HTML Body :  <body> ... </body>
+		std::string _httpVersion;
+		int _statusCode;
+		std::string _statusMsg;
+		std::string _connection; //keep-alive etc
+		std::string _date;
+		std::string _server;
+		std::string _contentType; //text/html etc
+		std::string _transferEncoding; //chunked etc
+		unsigned int _contentLength;
+		std::string _contentEncoding; //gzip etc
+		std::string _resBody; // HTML Body :  <body> ... </body>
 
 	public:
+		HttpResInfo()
+		: _httpVersion("HTTP/1.1"), _statusCode(0), _statusMsg(""), _connection(""), _date(timeStamp()), \
+		_server(""), _contentType(""), _transferEncoding(""), _contentLength(0), _contentEncoding(""), _resBody("") {}
 		void setStatusCode(int code) { _statusCode = code; }
 		void setStatusMsg(std::string msg) { _statusMsg = msg; }
 		void setConnection(std::string connection) { _connection = connection; }
