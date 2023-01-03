@@ -317,14 +317,12 @@ Config::serverInit(int start, int end)
 	*/
 }
 
-void
-Config::printV(std::vector <std::string> const &a) {
-
-
-	for(int i=0; i < a.size(); i++)
-		std::cout << a.at(i) << '\n';
-	std::cout << "\n\n\n";
-}
+// void
+// Config::printV(std::vector <std::string> const &a) {
+// 	for(int i=0; i < a.size(); i++)
+// 		std::cout << a.at(i) << '\n';
+// 	std::cout << "\n\n\n";
+// }
 
 
 const char*
@@ -332,71 +330,71 @@ Config::FileNotFoundException::what() const throw(){
 	return "Exception thrown: could not open configuration file";
 }
 
-// using vector_int_type = std::vector<int>;
-// std::ostream& operator << (std::ostream& os, const vector_int_type& vect) {
-//     for (const auto& i : vect)
-//         os << ' ' << i;
-//     return os;
-// }
+using vector_int_type = std::vector<int>;
+std::ostream& operator << (std::ostream& os, const vector_int_type& vect) {
+    for (const auto& i : vect)
+        os << ' ' << i;
+    return os;
+}
 
-// using vector_str_type = std::vector<std::string>;
-// std::ostream& operator << (std::ostream& os, const vector_str_type& vect) {
-//     for (const auto& i : vect)
-//         os << ' ' << i;
-//     return os;
-// }
+using vector_str_type = std::vector<std::string>;
+std::ostream& operator << (std::ostream& os, const vector_str_type& vect) {
+    for (const auto& i : vect)
+        os << ' ' << i;
+    return os;
+}
 
-// void Config_base::print_config()
-// {
-// 	BaseServer baseS;
-// 	ServerInfo tmpserver;
-// 	std::map< std::string, Location >	tmplocation;
-// 	std::map< std::string, CgiConfig >	tmpcgi;
-// 	std::cout << base.size() <<std::endl;
-// 	std::vector<BaseServer>::iterator it;
-// 	for (it = base.begin(); it != base.end(); it++)
-// 	{
-// 		tmpserver = it->getBServer();
-// 		tmplocation = it->getBLocation();
-// 		tmpcgi = it->getBCgi();
+void Config_base::print_config()
+{
 
-// 		std::cout << "\n\n*** ServerInfo *** \n";
-// 		std::cout << "serverName = [" << tmpserver.serverName << "]\nhost= [" << tmpserver.host << "]\nport = [" << tmpserver.port << \
-// 				"]\nmaxRequestBodySize = [" << tmpserver.maxRequestBodySize << "]\n"<<std::endl;
-// 		std::cout << "\n** Error page ** \n";
-// 		for (auto& item : tmpserver.errorPages)
-//         	std::cout << "key = [" << item.first << "] value = [" << item.second << "]" <<std::endl;
+	ServerInfo tmpserver;
+	std::map< std::string, Location >	tmplocation;
+	std::map< std::string, CgiConfig >	tmpcgi;
+	std::cout << base.size() <<std::endl;
+	std::vector<BaseServer>::iterator it;
+	for (it = base.begin(); it != base.end(); it++)
+	{
+		tmpserver = it->getBServer();
+		tmplocation = it->getBLocation();
+		tmpcgi = it->getBCgi();
+
+		std::cout << "\n\n*** ServerInfo *** \n";
+		std::cout << "serverName = [" << tmpserver.serverName << "]\nhost= [" << tmpserver.host << "]\nport = [" << tmpserver.port << \
+				"]\nmaxRequestBodySize = [" << tmpserver.maxRequestBodySize << "]\n"<<std::endl;
+		std::cout << "\n** Error page ** \n";
+		for (auto& item : tmpserver.errorPages)
+        	std::cout << "key = [" << item.first << "] value = [" << item.second << "]" <<std::endl;
 		
-// 		std::cout << "\n** Location ** \n";
-// 		for (auto& itemL : tmplocation)
-// 		{
-//         	std::cout << "\nkey = [" << itemL.first << "]"<< std::endl;
-// 			Location tmpL;
-// 			tmpL = itemL.second;
-// 			std::cout << "value = \n";
-// 			std::cout << "	root = [" << tmpL.root << "]\n";
-// 			std::cout << "	maxBody = [" << tmpL.maxBody << "]\n";
-// 			std::cout << "	returnType = [" << tmpL.returnType << "]\n";
-// 			std::cout << "	autoListing = [";
-// 			if (tmpL.autoListing)
-// 				std::cout << "on]\n";
-// 			else
-// 				std::cout << "off]\n";
-// 			std::cout << "	returnRoot = [" << tmpL.returnRoot << "]\n";
-// 			std::cout << "	methods = [" << tmpL.Methods << "]\n";
-// 			std::cout << "	index = [" << tmpL.index << "]\n";
-// 		}
+		std::cout << "\n** Location ** \n";
+		for (auto& itemL : tmplocation)
+		{
+        	std::cout << "\nkey = [" << itemL.first << "]"<< std::endl;
+			Location tmpL;
+			tmpL = itemL.second;
+			std::cout << "value = \n";
+			std::cout << "	root = [" << tmpL.root << "]\n";
+			std::cout << "	maxBody = [" << tmpL.maxBody << "]\n";
+			std::cout << "	returnType = [" << tmpL.returnType << "]\n";
+			std::cout << "	autoListing = [";
+			if (tmpL.autoListing)
+				std::cout << "on]\n";
+			else
+				std::cout << "off]\n";
+			std::cout << "	returnRoot = [" << tmpL.returnRoot << "]\n";
+			std::cout << "	methods = [" << tmpL.Methods << "]\n";
+			std::cout << "	index = [" << tmpL.index << "]\n";
+		}
 
-// 		std::cout << "\n** Cgi Config ** \n";
-// 		for (auto& itemC : tmpcgi)
-// 		{
-//         	std::cout << "\nkey = [" << itemC.first << "]"<< std::endl;
-// 			CgiConfig tmpC;
-// 			tmpC = itemC.second;
-// 			std::cout << "value = \n";
-// 			std::cout << "	root = [" << tmpC.root << "]\n";
-// 			std::cout << "	methods = [" << tmpC.Methods << "]\n";
+		std::cout << "\n** Cgi Config ** \n";
+		for (auto& itemC : tmpcgi)
+		{
+        	std::cout << "\nkey = [" << itemC.first << "]"<< std::endl;
+			CgiConfig tmpC;
+			tmpC = itemC.second;
+			std::cout << "value = \n";
+			std::cout << "	root = [" << tmpC.root << "]\n";
+			std::cout << "	methods = [" << tmpC.Methods << "]\n";
 
-// 		}
-// 	}
-// }
+		}
+	}
+}

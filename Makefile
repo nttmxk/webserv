@@ -1,7 +1,15 @@
 NAME		=	webserv
 CXX			=	c++
-CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic
-SRCS		=	main.cpp HttpServer.cpp Connection.cpp Response.cpp Multiplex.cpp
+CXXFLAGS	=	-Wall -Wextra -Werror -std=c++11 -pedantic
+SRCS		=	main.cpp \
+				webserv2/HttpServer.cpp \
+				webserv2/Connection.cpp \
+				webserv2/Response.cpp \
+				webserv2/Multiplex.cpp \
+				configParser/BaseServer.cpp \
+				configParser/Config.cpp \
+				# parseRequest/Request.cpp
+
 OBJS		=	$(SRCS:.cpp=.o)
 
 all	:	$(NAME)

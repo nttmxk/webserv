@@ -7,7 +7,7 @@
 
 #include "Define.hpp"
 #include "cppLibrary.hpp"
-
+#include "../configParser/Config.hpp"
 // class Connection; //in Connection.hpp // forward dec -> Field has incomplete type Error
 #include "Connection.hpp"
 
@@ -44,6 +44,4 @@ class HttpServer
 		};
 };
 
-
-#include "Config.hpp"
 #endif

@@ -18,7 +18,7 @@ struct Config_base
 	Config_base() { numOfServer = 0;}
 	std::vector<BaseServer> getConfigBase();
 	int	getNumOfServer();
-	// void print_config();
+	void print_config();
 
 protected:
 	std::vector<BaseServer> 		base;
@@ -44,7 +44,7 @@ private:
 	void configInit(const std::string path);
 	void configParse();
 	void serverInit(int, int);
-	void printV(std::vector <std::string> const &a);
+	// void printV(std::vector <std::string> const &a);
 	
 
 

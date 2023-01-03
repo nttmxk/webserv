@@ -4,16 +4,39 @@
 
 #include "HttpServer.hpp"
 #include "Define.hpp"
+#include "XConfig.hpp"
+
+// HttpServer::HttpServer(ConfigServer &config)
+// {
+// 	std::vector<ServerConf>::iterator it;
+// 	for (it = config.serverConfs.begin(); it != config.serverConfs.end(); ++it) {
+// 		InfoServer tmpInfo;
+
+// 		tmpInfo._serverSocket = NONE;
+// 		tmpInfo._ipAddress = it->ipAddr;
+// 		tmpInfo._port = it->port;
+// 		tmpInfo._serverAddr.sin_family = AF_INET; // ip v4
+// 		tmpInfo._serverAddr.sin_port = htons(tmpInfo._port);
+// 		tmpInfo._serverAddr.sin_addr.s_addr = inet_addr(tmpInfo._ipAddress.c_str()); // inet_addr converts 'char const *' to 'unsigned long' in network byte order
+// 		tmpInfo._serverAddrLen = sizeof(tmpInfo._serverAddr);
+// 		memset(tmpInfo._serverAddr.sin_zero, 0, sizeof(tmpInfo._serverAddr.sin_zero)); // it's a buffer only needed to convert 'sockaddr_in' type to 'sockaddr' type, which is larger type.
+
+// 		_infoServers.push_back(tmpInfo);
+// 	}
+// }
+
 
 HttpServer::HttpServer(Config &config)
 {
-	std::vector<ServerConf>::iterator it;
-	for (it = config.serverConfs.begin(); it != config.serverConfs.end(); ++it) {
+	// config.print_config();
+	std::vector<BaseServer> tmpBase = config.getConfigBase();
+	std::vector<BaseServer>::iterator it;
+	for (it = tmpBase.begin(); it != tmpBase.end(); ++it){
 		InfoServer tmpInfo;
 
 		tmpInfo._serverSocket = NONE;
-		tmpInfo._ipAddress = it->ipAddr;
-		tmpInfo._port = it->port;
+		tmpInfo._ipAddress = it.base()->getBServer().host;
+		tmpInfo._port = it.base()->getBServer().port;
 		tmpInfo._serverAddr.sin_family = AF_INET; // ip v4
 		tmpInfo._serverAddr.sin_port = htons(tmpInfo._port);
 		tmpInfo._serverAddr.sin_addr.s_addr = inet_addr(tmpInfo._ipAddress.c_str()); // inet_addr converts 'char const *' to 'unsigned long' in network byte order
@@ -32,7 +55,7 @@ HttpServer::openServer()
 {
 	std::vector<InfoServer>::iterator it;
 	for (it = _infoServers.begin(); it != _infoServers.end(); ++it) {
-
+		std::cout << "openserver!\n\n";
 		it->_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
 		if (it->_serverSocket < 0)
 			throw HttpServerError();

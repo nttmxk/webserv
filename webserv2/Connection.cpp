@@ -108,7 +108,7 @@ Connection::connectionLoop()
 				std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
 				if (it != _clientMap.end()) {
 					Response responser;
-					if (it->second.reqMsg == "GET")
+					// if (it->second.reqMsg == "GET")
 					{
 						// parsing needed
 						it->second.reqMsg = "";
