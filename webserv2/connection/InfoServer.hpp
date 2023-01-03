@@ -5,7 +5,7 @@
 #ifndef INFOSERVER_HPP
 #define INFOSERVER_HPP
 
-#include "cppLibrary.hpp"
+#include "../includes/cppLibrary.hpp"
 
 /* InfoServer *///-----------------------
 class InfoServer

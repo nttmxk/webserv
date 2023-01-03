@@ -5,8 +5,8 @@
 #ifndef HTTPRESINFO_HPP
 #define HTTPRESINFO_HPP
 
-#include "Define.hpp"
-#include "cppLibrary.hpp"
+#include "../includes/Define.hpp"
+#include "../includes/cppLibrary.hpp"
 
 /*=====================================================
 - HTTP/1.1 200 OK

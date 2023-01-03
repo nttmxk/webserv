@@ -4,13 +4,13 @@
 
 #include "webserv2/HttpServer.hpp"
 #include "configParser/Config.hpp"
-#include "webserv2/Define.hpp"
+#include "webserv2/includes/Define.hpp"
 
 int main(int argc, char** argv)
 {
 
 	Config config("configFiles/default.conf");
-	
+
 	if (argc == 2) {
 		std::string path = argv[1];
 		if ((path.compare(path.find('.'), 5, ".conf")) != 0) {

@@ -5,9 +5,9 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include "Define.hpp"
-#include "InfoServer.hpp"
-#include "InfoClient.hpp"
+#include "../includes/Define.hpp"
+#include "../connection/InfoServer.hpp"
+#include "../connection/InfoClient.hpp"
 #include "HttpResInfo.hpp"
 
 class Response : public HttpResInfo

@@ -5,8 +5,8 @@
 #ifndef MULTIPLEX_HPP
 #define MULTIPLEX_HPP
 
-#include "cppLibrary.hpp"
-#include "Define.hpp"
+#include "../includes/cppLibrary.hpp"
+#include "../includes/Define.hpp"
 
 /***************************************/
 /* Classes managed by Connection class */

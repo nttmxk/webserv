@@ -5,11 +5,11 @@
 #ifndef HTTPSERVER_HPP
 #define HTTPSERVER_HPP
 
-#include "Define.hpp"
-#include "cppLibrary.hpp"
+#include "includes/Define.hpp"
+#include "includes/cppLibrary.hpp"
 #include "../configParser/Config.hpp"
 // class Connection; //in Connection.hpp // forward dec -> Field has incomplete type Error
-#include "Connection.hpp"
+#include "connection/Connection.hpp"
 
 class InfoServer; //in Connection.hpp
 class Config; //in Config.hpp

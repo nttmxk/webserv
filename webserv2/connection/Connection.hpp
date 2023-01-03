@@ -6,15 +6,15 @@
 #define CONNECTION_HPP
 
 
-#include "Define.hpp"
-#include "cppLibrary.hpp"
+#include "../includes/Define.hpp"
+#include "../includes/cppLibrary.hpp"
 
-#include "Response.hpp"
+#include "../response/Response.hpp"
 #include "Multiplex.hpp"
 #include "InfoServer.hpp"
 #include "InfoClient.hpp"
 
-#include "../parseRequest/Request.hpp"
+#include "../../parseRequest/Request.hpp"
 
 class Connection
 {

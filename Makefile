@@ -3,9 +3,9 @@ CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic
 SRCS		=	main.cpp \
 				webserv2/HttpServer.cpp \
-				webserv2/Connection.cpp \
-				webserv2/Response.cpp \
-				webserv2/Multiplex.cpp \
+				webserv2/connection/Connection.cpp \
+				webserv2/response/Response.cpp \
+				webserv2/connection/Multiplex.cpp \
 				configParser/BaseServer.cpp \
 				configParser/Config.cpp \
 				# parseRequest/Request.cpp

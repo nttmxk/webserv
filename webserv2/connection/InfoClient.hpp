@@ -2,8 +2,8 @@
 #define INFOCLIENT_HPP
 
 #include "InfoServer.hpp"
-#include "cppLibrary.hpp"
-#include "Define.hpp"
+#include "../includes/cppLibrary.hpp"
+#include "../includes/Define.hpp"
 
 class InfoClient
 {
