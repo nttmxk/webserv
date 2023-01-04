@@ -69,7 +69,6 @@ Connection::connectionLoop()
 						throw ConnectionError();}
 
 					_eventManager.enrollEventToChangeList(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-					_eventManager.enrollEventToChangeList(clientSocket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 
 					_serverMap[currEvent->ident]._clients.push_back(clientSocket);
 					InfoClient infoClient; // need to be initialized
@@ -81,7 +80,7 @@ Connection::connectionLoop()
 
 				else if (_clientMap.find(currEvent->ident) != _clientMap.end()) {
 					// char buffer[BUFFER_SIZE] = {0};
-					char buffer[2] = {0};
+					char buffer[1024] = {0, };
 					// std::cout << "	clientMap size : " << _clientMap.size() << "\n";
 
 					int valRead = read(currEvent->ident, buffer, sizeof(buffer));
@@ -98,6 +97,7 @@ Connection::connectionLoop()
 						buffer[valRead] = '\0';
 						_clientMap[currEvent->ident].reqMsg += buffer;
 						std::cout << "Received requset from " << currEvent->ident << ": " << _clientMap[currEvent->ident].reqMsg << "\n";
+						_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 					}
 				}
 			}
