@@ -11,6 +11,7 @@ HttpServer::HttpServer(Config &config)
 	std::vector<BaseServer> tmpBase = config.getConfigBase();
 	std::vector<BaseServer>::iterator it;
 	for (it = tmpBase.begin(); it != tmpBase.end(); ++it){
+
 		InfoServer tmpInfo;
 
 		tmpInfo._serverSocket = NONE;
@@ -21,6 +22,11 @@ HttpServer::HttpServer(Config &config)
 		tmpInfo._serverAddr.sin_addr.s_addr = inet_addr(tmpInfo._ipAddress.c_str()); // inet_addr converts 'char const *' to 'unsigned long' in network byte order
 		tmpInfo._serverAddrLen = sizeof(tmpInfo._serverAddr);
 		memset(tmpInfo._serverAddr.sin_zero, 0, sizeof(tmpInfo._serverAddr.sin_zero)); // it's a buffer only needed to convert 'sockaddr_in' type to 'sockaddr' type, which is larger type.
+		
+		//add
+		tmpInfo.errorPages = it.base()->getBServer().errorPages;
+		tmpInfo.Location = it.base()->getBLocation();
+		tmpInfo.Cgi = it.base()->getBCgi();
 
 		_infoServers.push_back(tmpInfo);
 	}
