@@ -4,6 +4,7 @@
 
 #include "Connection.hpp"
 
+
 class Response;
 
 Connection::Connection()
@@ -15,6 +16,7 @@ Connection::~Connection()
 void
 Connection::connectionLoop()
 {
+	int flag = 0;
 	_eventManager.declareKqueue();
 
 
@@ -69,7 +71,6 @@ Connection::connectionLoop()
 						throw ConnectionError();}
 
 					_eventManager.enrollEventToChangeList(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-					_eventManager.enrollEventToChangeList(clientSocket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 
 					_serverMap[currEvent->ident]._clients.push_back(clientSocket);
 					InfoClient infoClient; // need to be initialized
@@ -81,10 +82,10 @@ Connection::connectionLoop()
 
 				else if (_clientMap.find(currEvent->ident) != _clientMap.end()) {
 					// char buffer[BUFFER_SIZE] = {0};
-					char buffer[2] = {0};
+					// char buffer[10] = {0, };
 					// std::cout << "	clientMap size : " << _clientMap.size() << "\n";
 
-					int valRead = read(currEvent->ident, buffer, sizeof(buffer));
+					int valRead = read(currEvent->ident, &(_clientMap[currEvent->ident].reqMsg[0]), 1024);
 					if (valRead == FAIL)
 					{
 						std::cerr << " from client " << currEvent->ident ;
@@ -95,25 +96,50 @@ Connection::connectionLoop()
 					}
 					else
 					{
-						buffer[valRead] = '\0';
-						_clientMap[currEvent->ident].reqMsg += buffer;
-						std::cout << "Received requset from " << currEvent->ident << ": " << _clientMap[currEvent->ident].reqMsg << "\n";
+						// buffer[valRead] = '\0';
+						// _clientMap[currEvent->ident].reqMsg += buffer;
+						//std::cout << "Received requset from " << currEvent->ident << ": " << _clientMap[currEvent->ident].reqMsg << "\n";
+						_clientMap[currEvent->ident].req.parseMessage(_clientMap[currEvent->ident].reqMsg);
+						
+						if (_clientMap[currEvent->ident].req._pStatus != Request::pComplete)
+							_clientMap[currEvent->ident].reqMsg.assign(1024, 0);
+						else
+						{
+							_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+						}
+						_clientMap[currEvent->ident].req.printRequest();
+						flag = 1;
 					}
 				}
 			}
 
 			/* write event */
-			else if (currEvent->filter == EVFILT_WRITE)
+			else if (currEvent->filter == EVFILT_WRITE && (flag == 1))
 			{
 				std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
 				if (it != _clientMap.end()) {
 					Response responser;
-					// if (it->second.reqMsg == "GET")
+					if (it->second.req.t_result.method == 0)
 					{
 						// parsing needed
+						std::cout << "\nmethod get\n\n";
 						it->second.reqMsg = "";
 						responser.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
+						flag = 0;
 					}
+					else if (it->second.req.t_result.method == 1)
+					{
+						std::cout << "method post\n\n";
+					}
+					else if (it->second.req.t_result.method == 2)
+					{
+						std::cout << "method delete\n\n";
+					}
+					else
+					{
+						std::cout << "method unknown\n\n";
+					}
+
 				}
 			}
 		}
