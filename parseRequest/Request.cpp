@@ -292,7 +292,7 @@ void	Request::parseBody()
 	/* TE -> transfer-encoding: chunked
 	 * CL -> content-length
 	 * only TE -> _bodyLength = -1 and _chunked = true -> _bodyLength != -1 and _chunked = true
-	 * both No -> _bodyLength = -1 and _chunked = false -> message without body
+	 * both No -> _bodyLength = -1 and _chunked = false
 	 * only CL -> _bodyLength >= 0 and _chunked = false
 	 */
 	if (_chunked)
@@ -303,7 +303,6 @@ void	Request::parseBody()
 		return ;
 	}
 	t_result.body += _orig;
-	_orig.clear();
 	if (t_result.body.size() >= _bodyLength)
 	{
 		t_result.pStatus = pComplete;
