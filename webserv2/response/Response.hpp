@@ -15,7 +15,12 @@ class Response : public HttpResInfo
 {
 	public:
 		void responseToClient(int clientSocket, InfoClient infoClient);
-		std::string makeResponseMsg(InfoClient &infoClient);
+		void makeResponseMsg(InfoClient &infoClient);
+		void makeErrorResponseMsg(InfoClient &infoClient, int errorCode);
+		bool cgiFinder(InfoClient &infoClient);
+		void Get();
+		void Post();
+		void Delete();
 		// std::string httpRes2XX();
 		// std::string httpRes3XX();
 		// std::string httpRes4XX();

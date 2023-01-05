@@ -4,54 +4,81 @@
 
 #include "Response.hpp"
 
+/*
+	로직 순서
+	1. req 파싱 구간에서 발생한 에러 미리 처리
+	2. cgi 관련 response 처리
+	3. 일반 get, post, delete 처리
+	4. client 의 새로운 request 를 위해 기존 상태는 초기화
+*/
+bool
+Response::cgiFinder(InfoClient &infoClient)
+{
+	// std::string str = infoClient.req.t_result.path;
+	std::string str = "https://robodream.tistory.com/418.py";
+	size_t sub;
+
+	if ((sub = str.rfind(".")) != std::string::npos)
+		str = str.substr(sub);
+	else
+		return false;
+	if (infoClient._server->Cgi.find(str) == infoClient._server->Cgi.end())
+		return false;
+	return true;
+}
 
 void
 Response::responseToClient(int clientSocket, InfoClient infoClient)
 {
 
-	std::string resMsg = makeResponseMsg(infoClient);
-	(void)infoClient; // to be used
+	// std::cout << "path = " << infoClient.req._target << std::endl;
+	if (infoClient.req.t_result.pStatus == Request::pError) {
+		makeErrorResponseMsg(infoClient, infoClient.req.t_result.status);
+	}
+	else if (cgiFinder(infoClient)) {
+		// makeCgiResponseMsg(infoClient);
+		//cgi 객체 생성후 요청
+	}
+	else {
+		makeResponseMsg(infoClient);
+	}
+	//sendReseponse(clientSocket);
+	infoClient.req.clearRequest();
+	
+	//(void)infoClient; // to be used
 
-	std::cout << " response to client : " << clientSocket << "\n";
-	long valWrite = write(clientSocket, resMsg.c_str(), resMsg.size());
-	if (valWrite == (long)resMsg.size())
-		std::cout << "SERVER RESPONSE SENT\n";
-	close(clientSocket);
+	// std::cout << " response to client : " << clientSocket << "\n";
+	// long valWrite = write(clientSocket, resMsg.c_str(), resMsg.size());
+	// if (valWrite == (long)resMsg.size())
+	// 	std::cout << "SERVER RESPONSE SENT\n";
+	// close(clientSocket);
 }
 
-std::string
+void
 Response::makeResponseMsg(InfoClient &infoClient)
 {
-	std::stringstream httpRes;
-	std::string htmlMsg = "";
+	std::cout << "makeResponseMsg "<< std::endl;
+	// int urlVal = urlValidate(infoClient.req.t_result.path);
+	// if (urlVal == false)
+	// 	return (httpResponse(infoClient.req.t_result.path, 404));
 
-	/*
-	127.0.0.1:8070/user/ -> user.html
-	127.0.0.1:8070/user/info -> userinfo.html
-	127.0.0.1:8070/user/pic -> userpic.html
-	*/
+	// if (infoClient.req.t_result.method == Request::GET) {
+	// 	int fileFd = open("static/index.html");
+	// 	int ret = 1;
+	// 	while (ret > 0)
+	// 	{
+	// 		char fileBuff[1000] = {0};
+	// 		ret = read(fileFd, fileBuff, sizeof(fileBuff));
+	// 		htmlMsg += fileBuff;
+	// 	}
+	// }
 
-	// infoClient에 req 인포 받아왔다고 가정
-	int urlVal = urlValidate(infoClient.req.t_result.path);
-	if (urlVal == false)
-		return (httpResponse(infoClient.req.t_result.path, 404));
+}
 
-	if (infoClient.req.t_result.method == Request::GET) {
-		int fileFd = open("static/index.html");
-		int ret = 1;
-		while (ret > 0)
-		{
-			char fileBuff[1000] = {0};
-			ret = read(fileFd, fileBuff, sizeof(fileBuff));
-			htmlMsg += fileBuff;
-		}
-	}
-	/* make response msg */
-	// httpRes << getHttpVersion() << " " << getStatusCode() << " " << getStatusMsg() << "\n";
-	// httpRes << "Content-Type"
-
-	// std::string htmlMsg = "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\nContent-Length: 200\n\n<h1>Hello</h1><img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==\" alt=\"Red dot\" />";
-	return (htmlMsg);
+void
+Response::makeErrorResponseMsg(InfoClient &infoClient, int errorCode)
+{
+	std::cout << "makeErrorResponseMsg "<< std::endl;
 }
 
 

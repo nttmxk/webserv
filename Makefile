@@ -1,6 +1,6 @@
 NAME		=	webserv
 CXX			=	c++
-CXXFLAGS	=	-std=c++98 -pedantic
+CXXFLAGS	=	-std=c++98 -pedantic -g3 -fsanitize=address
 SRCS		=	main.cpp \
 				webserv2/HttpServer.cpp \
 				webserv2/connection/Connection.cpp \
@@ -9,6 +9,7 @@ SRCS		=	main.cpp \
 				configParser/BaseServer.cpp \
 				configParser/Config.cpp \
 				parseRequest/Request.cpp
+
 
 OBJS		=	$(SRCS:.cpp=.o)
 

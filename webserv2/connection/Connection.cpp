@@ -4,7 +4,7 @@
 
 #include "Connection.hpp"
 
-class Response;
+// class Response;
 
 Connection::Connection()
 {
@@ -89,10 +89,10 @@ void Connection::connectionLoop()
 				else if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
 					// char buffer[BUFFER_SIZE] = {0};
-					// char buffer[10] = {0, };
+					char buffer[1024] = {0, };
 					// std::cout << "	clientMap size : " << _clientMap.size() << "\n";
 
-					int valRead = read(currEvent->ident, &(_clientMap[currEvent->ident].reqMsg[0]), 1024);
+					ssize_t valRead = read(currEvent->ident, &buffer, 1024);
 					if (valRead == FAIL)
 					{
 						std::cerr << " from client " << currEvent->ident;
@@ -103,15 +103,13 @@ void Connection::connectionLoop()
 					}
 					else
 					{
-						// buffer[valRead] = '\0';
-						// _clientMap[currEvent->ident].reqMsg += buffer;
-						// std::cout << "Received requset from " << currEvent->ident << ": " << _clientMap[currEvent->ident].reqMsg << "\n";
+						_clientMap[currEvent->ident].reqMsg = buffer;
 						_clientMap[currEvent->ident].req.parseMessage(_clientMap[currEvent->ident].reqMsg);
-
-						if (_clientMap[currEvent->ident].req._pStatus != Request::pComplete)
+						if (_clientMap[currEvent->ident].req.t_result.pStatus != Request::pComplete &&
+							_clientMap[currEvent->ident].req.t_result.pStatus != Request::pError) {
 							_clientMap[currEvent->ident].reqMsg.assign(1024, 0);
-						else
-						{
+						}
+						else {
 							_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 						}
 						_clientMap[currEvent->ident].req.printRequest();
@@ -122,12 +120,16 @@ void Connection::connectionLoop()
 			/* write event */
 			else if (currEvent->filter == EVFILT_WRITE)
 			{
+				_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+
 				std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
 
 				Response responser;
 
 				// it->second.reqMsg = "";
 				responser.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
+
+				
 			}
 		}
 	}
