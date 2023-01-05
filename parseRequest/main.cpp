@@ -1,29 +1,13 @@
 #include "Request.hpp"
 #include <iostream>
-#include <fstream>
-// test function
+#include <random>
+
+void test(std::string mOrig);
+
 int main()
 {
 	Request		request;
 	std::string	mOrig;
-//	std::ifstream file("request.txt");
-//
-//	if (file.fail())
-//	{
-//		return (1);
-//	}
-//	while (std::getline(file, mOrig))
-//		;
-//	file.close();
-
-//	mOrig = "GET /hello.htm HTTP/1.1\r\n"
-//			"User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\n"
-//			"Host: www.tutorialspoint.com\r\n"
-//			"Accept-Language: en-us\r\n"
-//			"Accept-Encoding: gzip, deflate\r\n"
-//			"Connection: Keep-Alive\r\n"
-//			"\r\n"
-//			"";
 
 	mOrig = "POST /cgi-bin/process.cgi HTTP/1.1\r\n"
 			"User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\n"
@@ -54,28 +38,34 @@ int main()
 			"0123456789\r\n"
 			"0\r\n";
 
-//	request.parseMessage(mOrig);
-//	request.printRequest();
-//	mOrig = "3\r\n";
-//	mOrig += "abc\r\n";
-//	request.parseMessage(mOrig);
-//	request.printRequest();
-//	mOrig = "4\r\n";
-//	mOrig += "dfer\r\n";
-//	mOrig += "A\r\n";
-//	request.parseMessage(mOrig);
-//	request.printRequest();
-//	mOrig = "0123456789\r\n";
-//	mOrig += "0\r\n";
-//	request.parseMessage(mOrig);
-//	request.printRequest();
+	test(mOrig);
 
-	request.parseMessage(mOrig);
-	while (request.t_result.pStatus != Request::pComplete
-		&& request.t_result.pStatus != Request::pError)
-		request.parseMessage("");
-
-	request.printRequest();
+//	request.parseMessage(mOrig);
+//	request.printRequest();
 
 	return (0);
+}
+
+void test(std::string mOrig)
+{
+	Request		request;
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> dis(1, 10);
+	std::string mInput;
+	int 		len;
+
+	while (!mOrig.empty())
+	{
+		len = dis(gen);
+		mInput = mOrig.substr(0, len);
+		mOrig.erase(0, len);
+		std::cout << "Size:" << mInput.size() << " M:"<< mInput << "]\n";
+		request.parseMessage(mInput);
+		if (request.t_result.pStatus == Request::pComplete
+			|| request.t_result.pStatus == Request::pError)
+			break ;
+	}
+
+	request.printRequest();
 }

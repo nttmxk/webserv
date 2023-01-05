@@ -1,10 +1,5 @@
 #include "Request.hpp"
 
-std::string Request::getHead() { return (_head); }
-std::string	Request::getTarget() { return (_target); }
-std::string	Request::getVersion() { return (_version); }
-
-
 /**
  *	@brief	Set request class to empty status
  *	@when	After send a response to client
@@ -35,8 +30,6 @@ void 		Request::updateStatus(int status, int pStatus) {
  */
 void	Request::parseMessage(std::string message)
 {
-	size_t	pos;
-
 	_orig += message;
 	if (t_result.pStatus == pRequest)
 		parseRequestLine();
@@ -60,8 +53,8 @@ void	Request::parseRequestLine()
 	pos = _orig.find(CRLF, 0);
 	if (pos == std::string::npos)
 	{
-//		if (IF TOO LONG)
-//			return errorStatus("# Control Line Error <Npos>\n", 400, pError);
+		if (_orig.size() > SIZE_MAX_REQ)
+			return errorStatus("# Request Line Too long\n", 400, pError);
 		return ;
 	}
 
@@ -69,17 +62,17 @@ void	Request::parseRequestLine()
 	_orig.erase(0, pos + 2);
 
 	if (std::count(mControl.begin(), mControl.end(),' ') != 2)
-		return errorStatus("# Control Line Error <WhiteSpace>\n", 400, pError);
+		return errorStatus("# Request Line Error <WhiteSpace>\n", 400, pError);
 	if (mControl.length() < 14) // The shortest message "GET / HTTP/1.0" is 14 characters
-		return errorStatus("# Control Line Error <LENGTH>\n", 400, pError);
+		return errorStatus("# Request Line Too short\n", 400, pError);
 
 	checkMethod(mControl);
 
 	pos = mControl.find(SP);
 	_target = mControl.substr(0, pos);
-	checkTarget();
-
 	_version = mControl.erase(0, pos + 1);
+
+	checkTarget();
 	checkVersion();
 
 	if (t_result.status == 200)
@@ -98,7 +91,7 @@ void Request::checkMethod(std::string &mControl)
 		return validateMethod(mControl, "POST");
 	else if (mControl[0] == 'D')
 		return validateMethod(mControl, "DELETE");
-	return errorStatus("# Control Line Error\n", 501, pError); // Not Implemented
+	return errorStatus("# Not Implemented\n", 501, pError); // Not Implemented
 }
 
 /**
@@ -126,6 +119,8 @@ void Request::validateMethod(std::string &mControl, std::string method)
  */
 void Request::checkTarget()
 {
+	if (_target.size() > SIZE_MAX_URI)
+		return errorStatus("# URI Too long\n", 414, pError);
 	//	Uri uriParser;
 	//	uriParser.parseTarget(_target);
 }
@@ -135,12 +130,9 @@ void Request::checkTarget()
  */
 void	Request::checkVersion()
 {
-	std::string version;
-
-	version = getVersion();
-	if (version.find(SP) != std::string::npos || version.size() != 8 || version.compare(0, 7, "HTTP/1.") != 0)
+	if (_version.find(SP) != std::string::npos || _version.size() != 8 || _version.compare(0, 7, "HTTP/1.") != 0)
 		return updateStatus(400, pError); // Bad Request
-	if (version.compare("HTTP/1.1") != 0 && version.compare("HTTP/1.0") != 0)
+	if (_version.compare("HTTP/1.1") != 0 && _version.compare("HTTP/1.0") != 0)
 		return updateStatus(505, pError); // HTTP Version Not Supported
 }
 
@@ -154,8 +146,8 @@ void	Request::parseHeader()
 	pos = _orig.find(CRLF CRLF);
 	if (pos == std::string::npos)
 	{
-//		if (SOMETHING)
-//			return errorStatus("# Header Line Error <Npos>\n", 400, pError);
+		if (_orig.size() > SIZE_MAX_HEADER)
+			return errorStatus("# Header Line Too Long\n", 400, pError);
 		return ;
 	}
 	_head = _orig.substr(0, pos + 2);
@@ -260,7 +252,10 @@ void 	Request::checkBodyLength()
 		if (it->second.find_first_not_of(DIGIT) != std::string::npos)
 			return errorStatus("CL should only include DIGIT\n", 400, pError);
 		std::stringstream ss(it->second);
-		ss >> _bodyLength; // client_max_body_size check
+		ss >> _bodyLength;
+		///////////// client_max_body_size check
+		if (it->second.size() > 4 || _bodyLength > SIZE_MAX_BODY)
+			return errorStatus("Body Length Too Long\n", 400, pError);
 	}
 
 	it = t_result.header.find("transfer-encoding");
@@ -326,6 +321,8 @@ void 	Request::parseChunked()
 		getChunkSize();
 	if (t_result.pStatus != pComplete && t_result.pStatus != pError)
 		getChunkMessage();
+	if (_bodyLength == -1)
+		getChunkSize();
 }
 
 /**
@@ -336,16 +333,21 @@ void 	Request::getChunkSize()
 	size_t	pos;
 
 	pos = _orig.find(CRLF);
-	if (pos == std::string::npos) // chunked size max also needed
+	if (pos == std::string::npos)
 	{
-//		if (SOMETHING)
-//			return errorStatus("Chunk message first CRLF error", 400, pError);
+		if (_orig.size() > SIZE_MAX_CHUNK + 1)
+			return errorStatus("Chunk message Too Long\n", 400, pError);
 		return ;
 	}
+
+	if (pos > SIZE_MAX_CHUNK)
+		return errorStatus("Chunk message Too Long\n", 400, pError);
 
 	std::stringstream ss(_orig.substr(0, pos));
 	////////////////// hex format should be checked
 	ss >> std::hex >> _bodyLength;
+	if (_bodyLength > 4095)
+		return errorStatus("Chunk message is bigger than FFF\n", 400, pError);
 	if (_bodyLength == 0) // receiving is done
 	{
 		if (pos != 1)
@@ -368,8 +370,8 @@ void	Request::getChunkMessage()
 	pos = _orig.find(CRLF);
 	if (pos == std::string::npos)
 	{
-//		if (SOMETHING)
-//			return errorStatus("Chunk message second CRLF error", 400, pError);
+		if (_orig.size() > 4095 + 1)
+			return errorStatus("Chunk message second CRLF error", 400, pError);
 		return ;
 	}
 
@@ -388,8 +390,8 @@ void	Request::printRequest()
 	if (t_result.status == 200)
 		std::cout <<
 			  "[Request Line]" <<
-			  "\nTarget:" << getTarget() << // soon to be deleted
-			  "\nVersion:" << getVersion() <<
+			  "\nTarget:" << _target << // soon to be deleted
+			  "\nVersion:" << _version <<
 			  std::endl;
 	std::cout << "[Result Info]" <<
 				"\nMethod:" << t_result.method <<
@@ -429,7 +431,7 @@ Request::Request(const Request &orig) {
 	*this = orig;
 }
 
-Request& Request::operator=(const Request &orig) {
+Request& Request::operator=(const Request &orig) { ///////// should be modified
 	_orig = orig._orig;
 	_head = orig._head;
 	_target = orig._target;

@@ -8,6 +8,12 @@
 # define HTAB '\t'
 # define CRLF "\r\n"
 # define DIGIT "0123456789"
+# define SIZE_MAX_REQ 6 + SIZE_MAX_URI + 8 // DELETE + URI + VERSION
+# define SIZE_MAX_URI 1024
+# define SIZE_MAX_HEADER 2048
+# define SIZE_MAX_HOST 128 // verifyhost
+# define SIZE_MAX_CHUNK 3 // hex FFF = dec 4095
+# define SIZE_MAX_BODY 8192
 
 /** Request class
  * author: jinoh
@@ -40,9 +46,7 @@ public:
 		std::string query;
 		std::string host;
 	}	t_result;
-	std::string	getHead();
-	std::string	getTarget();
-	std::string	getVersion();
+
 	void 		clearRequest();
 
 	void		parseMessage(std::string message);
