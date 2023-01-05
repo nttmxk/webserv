@@ -8,6 +8,12 @@
 # define HTAB '\t'
 # define CRLF "\r\n"
 # define DIGIT "0123456789"
+# define SIZE_MAX_REQ 6 + SIZE_MAX_URI + 8 // DELETE + URI + VERSION
+# define SIZE_MAX_URI 1024
+# define SIZE_MAX_HEADER 2048
+# define SIZE_MAX_HOST 128 // verifyhost
+# define SIZE_MAX_CHUNK 3 // hex FFF = dec 4095
+# define SIZE_MAX_BODY 8192
 
 /** Request class
  * author: jinoh
@@ -16,32 +22,6 @@
 
 class Request {
 public:
-	struct s_result {
-		int method;
-		int version; // no need?
-		int status;
-		bool close;
-		std::map<std::string, std::string> header;
-		std::string body;
-		std::string path; // target = (host) + path + query
-		std::string query;
-		std::string host;
-	}	t_result;
-	std::string	getOrig();
-	std::string	getHead();
-	std::string	getTarget();
-	std::string	getVersion();
-	void 		setOrig(std::string &orig);
-
-	void		parseMessage();
-	void		printRequest();
-
-	Request();
-	~Request();
-	Request(const Request &orig);
-	Request& operator=(const Request &orig);
-
-private:
 	enum {
 		pRequest = 0,
 		pHeader,
@@ -54,19 +34,43 @@ private:
 		POST,
 		DELETE
 	};
+	struct s_result {
+		int method;
+		int version; // no need?
+		int status;
+		int pStatus;
+		bool close;
+		std::map<std::string, std::string> header;
+		std::string body;
+		std::string path; // target = (host) + path + query
+		std::string query;
+		std::string host;
+	}	t_result;
+
+	void 		clearRequest();
+
+	void		parseMessage(std::string message);
+	void		printRequest();
+
+	Request();
+	~Request();
+	Request(const Request &orig);
+	Request& operator=(const Request &orig);
+
+private:
 	std::string	_orig;
-	std::string	_head;	// for debugging purpose
+	std::string	_head;
 	std::string	_target;
 	std::string	_version;	// no need?
-	int 		_pStatus;
 	int 		_bodyLength;
 	bool		_chunked;
-	void		parseRequestLine(size_t &pos);
-	void		parseStartLine(size_t &pos);
+	void		parseRequestLine();
+	void 		checkMethod(std::string &mControl);
+	void		validateMethod(std::string &mControl, std::string method);
+	void 		checkTarget();
 	void		checkVersion();
-	void		parseControl(std::string &mControl, std::string method);
 
-	void		parseHeader(size_t &prev);
+	void		parseHeader();
 	void		tokenizeHeader();
 	bool		isOWS(int c);
 	void		checkHeader();
@@ -75,8 +79,10 @@ private:
 	void 		checkBodyLength();
 	void 		checkConnection();
 
-	void		parseBody(size_t &prev);
+	void		parseBody();
 	void		parseChunked();
+	void		getChunkSize();
+	void 		getChunkMessage();
 
 	void 		updateStatus(int status, int pStatus);
 	void		errorStatus(std::string message, int status, int pStatus);
