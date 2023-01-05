@@ -63,6 +63,7 @@ private:
 	std::string	_target;
 	std::string	_version;	// no need?
 	int 		_bodyLength;
+	bool		_chunkReady;
 	bool		_chunked;
 	void		parseRequestLine();
 	void 		checkMethod(std::string &mControl);

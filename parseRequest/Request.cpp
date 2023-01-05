@@ -313,16 +313,17 @@ void	Request::parseBody()
 
 /**
  * 	@brief	parsing chunked content
- * 	@param	starting position of the content message
  */
 void 	Request::parseChunked()
 {
-	if (_bodyLength == -1)
-		getChunkSize();
-	if (t_result.pStatus != pComplete && t_result.pStatus != pError)
-		getChunkMessage();
-	if (_bodyLength == -1)
-		getChunkSize();
+	_chunkReady = true;
+	while (_chunkReady && t_result.pStatus == pBody)
+	{
+		if (_bodyLength == -1)
+			getChunkSize();
+		if (_bodyLength != -1 && t_result.pStatus == pBody)
+			getChunkMessage();
+	}
 }
 
 /**
@@ -337,6 +338,7 @@ void 	Request::getChunkSize()
 	{
 		if (_orig.size() > SIZE_MAX_CHUNK + 1)
 			return errorStatus("Chunk message Too Long\n", 400, pError);
+		_chunkReady = false;
 		return ;
 	}
 
@@ -372,6 +374,7 @@ void	Request::getChunkMessage()
 	{
 		if (_orig.size() > 4095 + 1)
 			return errorStatus("Chunk message second CRLF error", 400, pError);
+		_chunkReady = false;
 		return ;
 	}
 
