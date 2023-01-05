@@ -1,5 +1,5 @@
 /***************************************************/
-/* CODED BY JIN H. BANG ===========================*/
+/* CODED BY JIN H. BANG, kbaek ====================*/
 /***************************************************/
 
 #include "Response.hpp"
@@ -8,6 +8,7 @@
 void
 Response::responseToClient(int clientSocket, InfoClient infoClient)
 {
+
 	std::string resMsg = makeResponseMsg(infoClient);
 	(void)infoClient; // to be used
 

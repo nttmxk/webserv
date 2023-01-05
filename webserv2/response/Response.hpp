@@ -1,5 +1,5 @@
 /***************************************************/
-/* CODED BY JIN H. BANG ===========================*/
+/* CODED BY JIN H. BANG, kbaek ====================*/
 /***************************************************/
 
 #ifndef RESPONSE_HPP
@@ -9,6 +9,7 @@
 #include "../connection/InfoServer.hpp"
 #include "../connection/InfoClient.hpp"
 #include "HttpResInfo.hpp"
+#include <sys/stat.h>
 
 class Response : public HttpResInfo
 {
