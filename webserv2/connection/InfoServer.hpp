@@ -6,9 +6,10 @@
 #define INFOSERVER_HPP
 
 #include "../includes/cppLibrary.hpp"
+#include "../../configParser/Config_struct.hpp"
 
 /* InfoServer *///-----------------------
-class InfoServer
+class InfoServer 
 {
 	public:
 		int _serverSocket;
@@ -18,6 +19,13 @@ class InfoServer
 		unsigned int _serverAddrLen;
 		std::string _requestMsg;
 		std::list<int> _clients;
+
+		//add
+		std::map<std::string, std::vector<int> > errorPages;
+		std::map< std::string, Location >	Location;
+		std::map< std::string, CgiConfig >	Cgi;
+
+
 	public:
 		InfoServer &operator=(InfoServer const &rhs)
 		{

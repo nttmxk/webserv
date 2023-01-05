@@ -14,7 +14,6 @@
 #include "InfoServer.hpp"
 #include "InfoClient.hpp"
 
-#include "../../parseRequest/Request.hpp"
 
 class Connection
 {

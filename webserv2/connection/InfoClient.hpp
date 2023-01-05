@@ -4,6 +4,7 @@
 #include "InfoServer.hpp"
 #include "../includes/cppLibrary.hpp"
 #include "../includes/Define.hpp"
+#include "../../parseRequest/Request.hpp"
 
 class InfoClient
 {
@@ -11,6 +12,7 @@ class InfoClient
 		int _clientSocket;
 		InfoServer *_server;
 		std::string reqMsg;
+		Request req;
 
 	public:
 		InfoClient()

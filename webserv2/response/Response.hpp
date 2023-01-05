@@ -1,5 +1,5 @@
 /***************************************************/
-/* CODED BY JIN H. BANG ===========================*/
+/* CODED BY JIN H. BANG, kbaek ====================*/
 /***************************************************/
 
 #ifndef RESPONSE_HPP
@@ -9,12 +9,13 @@
 #include "../connection/InfoServer.hpp"
 #include "../connection/InfoClient.hpp"
 #include "HttpResInfo.hpp"
+#include <sys/stat.h>
 
 class Response : public HttpResInfo
 {
 	public:
 		void responseToClient(int clientSocket, InfoClient infoClient);
-		std::string makeResponseMsg();
+		std::string makeResponseMsg(InfoClient &infoClient);
 		// std::string httpRes2XX();
 		// std::string httpRes3XX();
 		// std::string httpRes4XX();
