@@ -15,7 +15,7 @@
 */
 
 void
-Response::responseToClient(int clientSocket, InfoClient infoClient)
+Response::responseToClient(int clientSocket, InfoClient &infoClient)
 {
 
 	// std::cout << "path = " << infoClient.req._target << std::endl;
@@ -66,7 +66,7 @@ void
 Response::makeErrorResponseMsg(InfoClient &infoClient, int errorCode)
 {
 	std::cout << "makeErrorResponseMsg "<< std::endl;
-	
+	this->status = rError;
 	std::string errorPath = "";
 
 	//1. config 파일 내부에 해당 error page 가 설정된 경우
@@ -79,79 +79,90 @@ Response::makeErrorResponseMsg(InfoClient &infoClient, int errorCode)
 				errorPath = it->first;
 		}
 	}
-	if (errorPath != "")
+	if (errorPath != "") //connection.cpp **if (_clientMap[currEvent->ident].status == InfoClient::fMaking)** 로직
 	{
+		infoClient.status = InfoClient::fMaking;
+		std::string tmpPath = "configFiles/test.html";
 		int fd;
 		struct stat ss;
-		if (stat(errorPath.c_str(), &ss) == -1 || S_ISREG(ss.st_mode) != true ||
-			(fd = open(errorPath.c_str(), O_RDONLY) == -1))
-			this->status = errorCaseOne();
+		if (stat(tmpPath.c_str(), &ss) == -1 || S_ISREG(ss.st_mode) != true ||
+			(fd = open(tmpPath.c_str(), O_RDONLY)) == -1)
+			std::cout << "errorPath failier" << std::endl;
 		else
 		{
+			std::cout << "fd = "<< fd<<std::endl;
 			fcntl(fd, F_SETFL, O_NONBLOCK);
+			infoClient.file.fd = fd;
+			
 			// 1.파일 읽기에 대한 kq 이벤트 등록 
 			// 2. file 정보 저장
-			if (readFd(fd) == -1)
-				this->status = errorCaseOne();
-			// close(fd);
-
+			// int status = readFd(infoClient, fd);
+			// if (status == -1)
+			// {
+			// 	infoClient.status = InfoClient::fError;
+			// 	std::cout << "errorPath 22 failier" << std::endl;
+			// }
+			// else if (status == 0)
+			// {
+			// 	infoClient.status = InfoClient::fMaking;
+			// 	std::cout << "file buffer = " << infoClient.file.buffer << std::endl;
+			// }
+			// else
+			// 	infoClient.status = InfoClient::fComplete;
 
 		}
-		
-		
-			
 	}
-	else
+	else //connection.cpp **else if (_clientMap[currEvent->ident].status == InfoClient::fComplete)** 로직
 	{
 
 	}
-	//2. 없는 경우
 }
 
-int
-Response::readFd(int fd)
-{
-	char buffer[4096] = {0, };
-	ssize_t size = read(fd, buffer, 4096);
-	if (size == -1)
-	{
-		close(fd);
-		return -1;
-	}
-	if (size > 0)
-	{
-		
-	}
-	
+// int
+// Response::readFd(InfoClient &infoClient, int fd)
+// {
+// 	char buffer[10] = {0, };
+// 	ssize_t size = read(fd, buffer, 10);
+// 	if (size < 0)
+// 	{
+// 		close(fd);
+// 		return -1;
+// 	}
+// 	infoClient.file.buffer.append(buffer, size);
+// 	//fileBuff.append(buffer, size);
+// 	if (size < 10)
+// 	{
+// 		close(fd);
+// 		return 1;
+// 	}
+// 	return 0;
+// }
 
+// ResponseManager::HandleGetErrorFailure(void) {
+//   result_.status = 500;  // INTERNAL_SERVER_ERROR
+//   is_keep_alive_ = false;
+//   response_buffer_.content = LAST_ERROR_DOCUMENT;
+//   io_status_ = SetIoComplete(IO_COMPLETE);
+//   return IoFdPair();
+// }
 
-}
-
-ResponseManager::IoFdPair ResponseManager::HandleGetErrorFailure(void) {
-  result_.status = 500;  // INTERNAL_SERVER_ERROR
-  is_keep_alive_ = false;
-  response_buffer_.content = LAST_ERROR_DOCUMENT;
-  io_status_ = SetIoComplete(IO_COMPLETE);
-  return IoFdPair();
-}
-
-ResponseManager::IoFdPair ResponseManager::GenerateDefaultError(void) {
-  std::stringstream ss;
-  ss << result_.status << " " << g_status_map[result_.status];
-  response_buffer_.content = "<!DOCTYPE html><title>" + ss.str() +
-                             "</title><body><h1>" + ss.str() +
-                             "</h1></body></html>";
-  router_result_.error_path = "default_error.html";
-  io_status_ = SetIoComplete(IO_COMPLETE);
-  result_.ext = "html";
-  return IoFdPair();
-}
+// ResponseManager::GenerateDefaultError(void) {
+//   std::stringstream ss;
+//   ss << result_.status << " " << g_status_map[result_.status];
+//   response_buffer_.content = "<!DOCTYPE html><title>" + ss.str() +
+//                              "</title><body><h1>" + ss.str() +
+//                              "</h1></body></html>";
+//   router_result_.error_path = "default_error.html";
+//   io_status_ = SetIoComplete(IO_COMPLETE);
+//   result_.ext = "html";
+//   return IoFdPair();
+// }
 
 void
 Response::makeResponseMsg(InfoClient &infoClient)
 {
 	std::cout << "makeResponseMsg "<< std::endl;
-	makeErrorResponseMsg(infoClient, 409);
+	makeErrorResponseMsg(infoClient, 404);
 	// int urlVal = urlValidate(infoClient.req.t_result.path);
 	// if (urlVal == false)
 	// 	return (httpResponse(infoClient.req.t_result.path, 404));

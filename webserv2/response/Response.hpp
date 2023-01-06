@@ -15,11 +15,12 @@ class Response : public HttpResInfo
 {
 public:
 	Response() : HttpResInfo(), status(PREPARING) {}
-	void responseToClient(int clientSocket, InfoClient infoClient);
+	void responseToClient(int clientSocket, InfoClient &infoClient);
 	void makeResponseMsg(InfoClient &infoClient);
 	void makeErrorResponseMsg(InfoClient &infoClient, int errorCode);
 	void makeRedirectResponse(InfoClient &infoClient);
 	
+	int	readFd(InfoClient &infoClient, int fd);
 	bool cgiFinder(InfoClient &infoClient);
 	bool redirectionFinder(InfoClient &infoClient);
 	void Get();
@@ -32,6 +33,7 @@ public:
 	// std::string httpRes500();
 public:
 	int status;
+	std::string fileBuff;
 
 public:
 	enum {

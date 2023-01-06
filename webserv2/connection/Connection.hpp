@@ -14,7 +14,6 @@
 #include "InfoServer.hpp"
 #include "InfoClient.hpp"
 
-
 class Connection
 {
 	private:
@@ -25,6 +24,8 @@ class Connection
 		std::vector<int> _serverSockets;
 		std::map<int, InfoServer> _serverMap;
 		std::map<int, InfoClient> _clientMap;
+		std::map <int, uintptr_t> _fdMap;
+
 	public:
 		std::string _clientReq;
 

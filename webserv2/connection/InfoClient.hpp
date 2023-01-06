@@ -6,13 +6,30 @@
 #include "../includes/Define.hpp"
 #include "../../parseRequest/Request.hpp"
 
+
 class InfoClient
 {
+	struct fileEvent
+	{
+		int fd;
+		std::size_t size;
+		std::string buffer;
+		fileEvent() : fd(-1), size(0), buffer("") {}
+	};
+	public:
+		enum {
+			fNone = 0,
+			fError,
+			fComplete,
+			fMaking
+		};
 	public:
 		int _clientSocket;
 		InfoServer *_server;
 		std::string reqMsg;
 		Request req;
+		int status;
+		fileEvent file;
 
 	public:
 		InfoClient()
