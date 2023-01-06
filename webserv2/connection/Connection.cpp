@@ -59,7 +59,6 @@ void Connection::connectionLoop()
 			/* read event */
 			else if (currEvent->filter == EVFILT_READ)
 			{
-				std::cout << "aaaa"  << std::endl;
 				if (_serverMap.find(currEvent->ident) != _serverMap.end())
 				{
 					std::cout << "server read event currEvent->ident = " << currEvent->ident  << std::endl;
@@ -132,20 +131,24 @@ void Connection::connectionLoop()
 				}
 				if (_fdMap.find(currEvent->ident) != _fdMap.end())
 				{
+					_clientMap[_fdMap[currEvent->ident]].status = readFile(_clientMap[_fdMap[currEvent->ident]], currEvent->ident);
 					
-					int status = readFd(infoClient, fd);
-					if (status == -1)
+					switch (_clientMap[_fdMap[currEvent->ident]].status)
 					{
-						infoClient.status = InfoClient::fError;
-						std::cout << "errorPath 22 failier" << std::endl;
+					case InfoClient::fError:
+						//500 error page open
+						std::cout << "fError" << std::endl;
+						break;
+					case InfoClient::fMaking:
+						//keep reading
+						std::cout << "fMaking = " << _clientMap[_fdMap[currEvent->ident]].file.buffer << std::endl;
+						break;
+					case InfoClient::fComplete:
+						//해당 에러페이지를 body 로 갖는 response header 만들기
+						std::cout << "file reading done\n";
+						break;
 					}
-					else if (status == 0)
-					{
-						infoClient.status = InfoClient::fMaking;
-						std::cout << "file buffer = " << infoClient.file.buffer << std::endl;
-					}
-					else
-						infoClient.status = InfoClient::fComplete;
+
 					_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				}
 					
@@ -170,3 +173,26 @@ void Connection::connectionLoop()
 		}
 	}
 }
+
+int
+Connection::readFile(InfoClient &infoClient, int fd)
+{
+	char buffer[BUFFER_SIZE];
+	
+	memset(buffer, 0, BUFFER_SIZE);
+	ssize_t size = read(fd, &buffer[0], BUFFER_SIZE);
+	if (size < 0)
+	{
+		close(fd);
+		infoClient.file.buffer.clear();
+		return InfoClient::fError;
+	}
+	infoClient.file.buffer += std::string(buffer, size);
+	if (size < BUFFER_SIZE)
+	{
+		close(fd);
+		return InfoClient::fComplete;
+	}
+	return InfoClient::fMaking;
+}
+

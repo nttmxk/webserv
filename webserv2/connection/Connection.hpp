@@ -33,6 +33,7 @@ class Connection
 		Connection();
 		~Connection();
 		void connectionLoop();
+		int	readFile(InfoClient &infoClient, int fd);
 
 		class ConnectionError : public std::exception
 		{
