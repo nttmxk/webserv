@@ -11,20 +11,34 @@
 #include "HttpResInfo.hpp"
 #include <sys/stat.h>
 
-class Response : public HttpResInfo
+class Response : public HttpResInfo 
 {
-	public:
-		void responseToClient(int clientSocket, InfoClient infoClient);
-		void makeResponseMsg(InfoClient &infoClient);
-		void makeErrorResponseMsg(InfoClient &infoClient, int errorCode);
-		bool cgiFinder(InfoClient &infoClient);
-		void Get();
-		void Post();
-		void Delete();
-		// std::string httpRes2XX();
-		// std::string httpRes3XX();
-		// std::string httpRes4XX();
-		// std::string httpRes500();
+public:
+	Response() : HttpResInfo(), status(PREPARING) {}
+	void responseToClient(int clientSocket, InfoClient infoClient);
+	void makeResponseMsg(InfoClient &infoClient);
+	void makeErrorResponseMsg(InfoClient &infoClient, int errorCode);
+	void makeRedirectResponse(InfoClient &infoClient);
+	
+	bool cgiFinder(InfoClient &infoClient);
+	bool redirectionFinder(InfoClient &infoClient);
+	void Get();
+	void Post();
+	void Delete();
+
+	// std::string httpRes2XX();
+	// std::string httpRes3XX();
+	// std::string httpRes4XX();
+	// std::string httpRes500();
+public:
+	int status;
+
+public:
+	enum {
+	rMaking = 0,
+	rComplete,
+	rError
+	};
 };
 
 #endif

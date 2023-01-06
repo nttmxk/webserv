@@ -56,6 +56,7 @@ Config::configInit(const std::string _path) {
 		if (buffer.size() > 0)
 			file.push_back(buffer);
 	}
+	ifs.close();
 	// printV(file);
 }
 

@@ -109,10 +109,11 @@ void Connection::connectionLoop()
 							_clientMap[currEvent->ident].req.t_result.pStatus != Request::pError) {
 							_clientMap[currEvent->ident].reqMsg.assign(1024, 0);
 						}
-						else {
+						else { //클라이언트로부터 메시지를 모두 전달 받으면 response 를 위해 해당 클라이언트의 읽기 감지는 중단하고, 쓰기 감지는 실행한다.
+							_clientMap[currEvent->ident].req.printRequest();
+							_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 							_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 						}
-						_clientMap[currEvent->ident].req.printRequest();
 					}
 				}
 			}
@@ -126,9 +127,11 @@ void Connection::connectionLoop()
 
 				Response responser;
 
-				// it->second.reqMsg = "";
 				responser.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
-
+				if (responser.status == Response::rComplete || responser.status == Response::rError)
+				{
+					_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+				}
 				
 			}
 		}

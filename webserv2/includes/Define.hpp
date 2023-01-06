@@ -16,4 +16,10 @@
 
 #define NONE -1
 
+/*
+response class
+*/
+#define PREPARING 0
+#define DONE 1
+
 #endif
