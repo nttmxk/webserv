@@ -23,8 +23,8 @@ struct Location
 	std::vector<std::string> index;
 	int maxBody;
 	int returnType;
-	bool autoListing;
 	std::string returnRoot;
+	bool autoListing;
 };
 
 
