@@ -30,7 +30,7 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 		// makeCgiResponseMsg(infoClient);
 		//cgi 객체 생성후 요청
 	}
-	else {
+	else { //get
 		makeResponseMsg(infoClient);
 	}
 	//sendReseponse(clientSocket);
@@ -57,7 +57,7 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 // }
 /*
 
-/*
+
  	1.해당 errorCode 에 대한 파일을 서버에서 가지고 있는 경우
 	2. 없는 경우
 
@@ -93,23 +93,6 @@ Response::makeErrorResponseMsg(InfoClient &infoClient, int errorCode)
 			std::cout << "fd = "<< fd<<std::endl;
 			fcntl(fd, F_SETFL, O_NONBLOCK);
 			infoClient.file.fd = fd;
-			
-			// 1.파일 읽기에 대한 kq 이벤트 등록 
-			// 2. file 정보 저장
-			// int status = readFd(infoClient, fd);
-			// if (status == -1)
-			// {
-			// 	infoClient.status = InfoClient::fError;
-			// 	std::cout << "errorPath 22 failier" << std::endl;
-			// }
-			// else if (status == 0)
-			// {
-			// 	infoClient.status = InfoClient::fMaking;
-			// 	std::cout << "file buffer = " << infoClient.file.buffer << std::endl;
-			// }
-			// else
-			// 	infoClient.status = InfoClient::fComplete;
-
 		}
 	}
 	else //connection.cpp **else if (_clientMap[currEvent->ident].status == InfoClient::fComplete)** 로직
@@ -117,46 +100,6 @@ Response::makeErrorResponseMsg(InfoClient &infoClient, int errorCode)
 
 	}
 }
-
-// int
-// Response::readFd(InfoClient &infoClient, int fd)
-// {
-// 	char buffer[10] = {0, };
-// 	ssize_t size = read(fd, buffer, 10);
-// 	if (size < 0)
-// 	{
-// 		close(fd);
-// 		return -1;
-// 	}
-// 	infoClient.file.buffer.append(buffer, size);
-// 	//fileBuff.append(buffer, size);
-// 	if (size < 10)
-// 	{
-// 		close(fd);
-// 		return 1;
-// 	}
-// 	return 0;
-// }
-
-// ResponseManager::HandleGetErrorFailure(void) {
-//   result_.status = 500;  // INTERNAL_SERVER_ERROR
-//   is_keep_alive_ = false;
-//   response_buffer_.content = LAST_ERROR_DOCUMENT;
-//   io_status_ = SetIoComplete(IO_COMPLETE);
-//   return IoFdPair();
-// }
-
-// ResponseManager::GenerateDefaultError(void) {
-//   std::stringstream ss;
-//   ss << result_.status << " " << g_status_map[result_.status];
-//   response_buffer_.content = "<!DOCTYPE html><title>" + ss.str() +
-//                              "</title><body><h1>" + ss.str() +
-//                              "</h1></body></html>";
-//   router_result_.error_path = "default_error.html";
-//   io_status_ = SetIoComplete(IO_COMPLETE);
-//   result_.ext = "html";
-//   return IoFdPair();
-// }
 
 void
 Response::makeResponseMsg(InfoClient &infoClient)
@@ -177,8 +120,22 @@ Response::makeResponseMsg(InfoClient &infoClient)
 	// 		htmlMsg += fileBuff;
 	// 	}
 	// }
-
 }
+
+
+void
+Response::startResponse(InfoClient &infoClient)
+{
+	setStatusCode(infoClient.req.t_result.status);
+	//setStatusMsg();
+	// setConnection();
+	// setContentType();
+	// setTransferEncoding();
+	// setContentLength();
+	// setContentEncoding();
+	setBody(infoClient.file.buffer);
+}
+
 
 bool
 Response::cgiFinder(InfoClient &infoClient)
@@ -217,6 +174,27 @@ Response::redirectionFinder(InfoClient &infoClient)
 	return false;
 }
 
+
+
+// ResponseManager::HandleGetErrorFailure(void) {
+//   result_.status = 500;  // INTERNAL_SERVER_ERROR
+//   is_keep_alive_ = false;
+//   response_buffer_.content = LAST_ERROR_DOCUMENT;
+//   io_status_ = SetIoComplete(IO_COMPLETE);
+//   return IoFdPair();
+// }
+
+// ResponseManager::GenerateDefaultError(void) {
+//   std::stringstream ss;
+//   ss << result_.status << " " << g_status_map[result_.status];
+//   response_buffer_.content = "<!DOCTYPE html><title>" + ss.str() +
+//                              "</title><body><h1>" + ss.str() +
+//                              "</h1></body></html>";
+//   router_result_.error_path = "default_error.html";
+//   io_status_ = SetIoComplete(IO_COMPLETE);
+//   result_.ext = "html";
+//   return IoFdPair();
+// }
 
 // std::string
 // Response::httpRes2XX()

@@ -6,6 +6,7 @@
 #include "../includes/Define.hpp"
 #include "../../parseRequest/Request.hpp"
 
+class Response;
 
 class InfoClient
 {
@@ -25,11 +26,13 @@ class InfoClient
 		};
 	public:
 		int _clientSocket;
+		fileEvent file;
 		InfoServer *_server;
 		std::string reqMsg;
 		Request req;
 		int status;
-		fileEvent file;
+
+
 
 	public:
 		InfoClient()

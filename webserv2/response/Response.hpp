@@ -11,15 +11,21 @@
 #include "HttpResInfo.hpp"
 #include <sys/stat.h>
 
+class InfoClient;
+class HttpResInfo;
+
 class Response : public HttpResInfo 
 {
 public:
 	Response() : HttpResInfo(), status(PREPARING) {}
+
 	void responseToClient(int clientSocket, InfoClient &infoClient);
 	void makeResponseMsg(InfoClient &infoClient);
 	void makeErrorResponseMsg(InfoClient &infoClient, int errorCode);
 	void makeRedirectResponse(InfoClient &infoClient);
 	
+	void startResponse(InfoClient &infoClient);
+
 	int	readFd(InfoClient &infoClient, int fd);
 	bool cgiFinder(InfoClient &infoClient);
 	bool redirectionFinder(InfoClient &infoClient);
@@ -34,6 +40,10 @@ public:
 public:
 	int status;
 	std::string fileBuff;
+// private:
+// 	Request &req;
+// 	fileEvent &file;
+
 
 public:
 	enum {

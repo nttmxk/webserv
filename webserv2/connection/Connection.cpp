@@ -32,6 +32,7 @@ void Connection::connectionLoop()
 	struct kevent const *currEvent = nullptr;
 	while (true)
 	{
+		Response res;
 		eventsNum = _eventManager.senseEvents();
 		_eventManager.clearChangeList();
 		for (int i = 0; i < eventsNum; ++i)
@@ -49,7 +50,7 @@ void Connection::connectionLoop()
 				}
 				else if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
-					std::cerr << " client error case \n";
+					std::cerr << currEvent->ident << " client error case \n";
 					close(currEvent->ident);
 					_clientMap.erase(currEvent->ident);
 					throw ConnectionError();
@@ -59,6 +60,7 @@ void Connection::connectionLoop()
 			/* read event */
 			else if (currEvent->filter == EVFILT_READ)
 			{
+				
 				if (_serverMap.find(currEvent->ident) != _serverMap.end())
 				{
 					std::cout << "server read event currEvent->ident = " << currEvent->ident  << std::endl;
@@ -110,13 +112,13 @@ void Connection::connectionLoop()
 							_clientMap[currEvent->ident].reqMsg.assign(BUFFER_SIZE, 0);
 						}
 						else {
-							Response responser;
+							// Response responser;
 
-							responser.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
-							if (responser.status == Response::rComplete) {
+							res.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
+							if (res.status == Response::rComplete) {
 								_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 							}
-							else if (responser.status == Response::rError) {
+							else if (res.status == Response::rError) {
 								if (_clientMap[currEvent->ident].status == InfoClient::fMaking) {
 									_eventManager.enrollEventToChangeList(_clientMap[currEvent->ident].file.fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 									_fdMap.insert(std::make_pair(_clientMap[currEvent->ident].file.fd, currEvent->ident));
@@ -131,6 +133,7 @@ void Connection::connectionLoop()
 				}
 				if (_fdMap.find(currEvent->ident) != _fdMap.end())
 				{
+					std::cout << _fdMap[currEvent->ident] << currEvent->ident << std::endl;
 					_clientMap[_fdMap[currEvent->ident]].status = readFile(_clientMap[_fdMap[currEvent->ident]], currEvent->ident);
 					
 					switch (_clientMap[_fdMap[currEvent->ident]].status)
@@ -144,12 +147,13 @@ void Connection::connectionLoop()
 						std::cout << "fMaking = " << _clientMap[_fdMap[currEvent->ident]].file.buffer << std::endl;
 						break;
 					case InfoClient::fComplete:
-						//해당 에러페이지를 body 로 갖는 response header 만들기
-						std::cout << "file reading done\n";
+						res.startResponse(_clientMap[currEvent->ident]);
+						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+						std::cout << currEvent->ident << " file reading done\n";
+						
 						break;
 					}
-
-					_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+					_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				}
 					
 			}
@@ -157,6 +161,7 @@ void Connection::connectionLoop()
 			/* write event */
 			else if (currEvent->filter == EVFILT_WRITE)
 			{
+				std::cout << "currEvent->filter " << currEvent->filter << "Write\n";
 				_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				
 				//std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
