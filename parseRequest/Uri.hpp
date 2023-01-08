@@ -47,10 +47,7 @@ private:
 	void	decodeHex(std::string &uri, size_t pos);
 	void	encodeToHex(std::string &uri);
 
-	// should be merged into one function
-	bool	isReserved(int c);
-	bool	isPchar(int c);
-	bool	isUserInfo(int c);
+	bool	isCharset(std::string charset, char c);
 };
 
 #endif

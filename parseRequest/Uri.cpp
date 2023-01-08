@@ -5,7 +5,7 @@ void Uri::parseTarget(std::string &uri) // rfc 3986
 	size_t pos;
 
 	pos = 0;
-	if (isalpha(uri[0]) == true)
+	if (isalpha(uri[0]))
 	{
 		checkScheme(uri, pos);
 		checkHier(uri, ++pos);
@@ -27,10 +27,13 @@ void Uri::checkScheme(std::string &uri, size_t &pos)
 		_valid = false;
 		return;
 	}
-	if (uri.find_first_not_of(ALPHA DIGIT "+.-", 0, pos) != std::string::npos)
+	for (int i = 0; i < pos; ++i)
 	{
-		_valid = false;
-		return ;
+		if (!isCharset(ALPHA DIGIT "+.-", uri[i]))
+		{
+			_valid = false;
+			return ;
+		}
 	}
 	_scheme = uri.substr(0, pos);
 }
@@ -63,7 +66,7 @@ void Uri::checkAuth(std::string &uri, size_t &pos)
 	start = pos;
 	while (pos < uri.size() && _valid && (uri[pos] != ':' && uri[pos] != '/'))
 	{
-		if (isUserInfo(uri[pos])) // user : password is deprecated, so don't accept it (chrome 59)
+		if (isCharset(UNRESERVED SUB_DELIMS, uri[pos])) // user : password is deprecated, so don't accept it (chrome 59)
 			pos++;
 		else if (uri[pos] == '%')
 			decodeHex(uri, pos);
@@ -76,9 +79,9 @@ void Uri::checkAuth(std::string &uri, size_t &pos)
 	_host = uri.substr(start, pos - start);
 	if (uri[pos] == ':')
 	{
-		start_port = pos;
-		while (++pos < uri.size() && isdigit(uri[pos]))
-			;
+		start_port = ++pos;
+		while (pos < uri.size() && isdigit(uri[pos]))
+			pos++;
 		_port = uri.substr(start_port, pos - start_port);
 	}
 	pos = start;
@@ -91,7 +94,7 @@ void Uri::checkPath(std::string &uri, size_t pos)
 	start = pos;
 	while (pos < uri.size() && _valid && uri[pos] != '?')
 	{
-		if (isPchar(uri[pos]) || uri[pos] == '/')
+		if (isCharset(PCHAR, uri[pos]) || uri[pos] == '/')
 			pos++;
 		else if (uri[pos] == '%')
 			decodeHex(uri, pos);
@@ -109,7 +112,7 @@ void Uri::checkQuery(std::string &uri, size_t pos)
 	start = pos;
 	while (pos < uri.size() && _valid)
 	{
-		if (isPchar(uri[pos]) || uri[pos] == '/' || uri[pos] == '?')
+		if (isCharset(PCHAR, uri[pos]) || uri[pos] == '/' || uri[pos] == '?')
 			pos++;
 		else if (uri[pos] == '%')  // it is sometimes better for usability to avoid percent-encoding those characters ???
 			pos++; // it sounds vague...
@@ -121,7 +124,7 @@ void Uri::checkQuery(std::string &uri, size_t pos)
 
 void Uri::decodeHex(std::string &uri, size_t pos)
 {
-	if (pos + 2 >= uri.size() || uri.find_first_not_of(HEXDIG, pos + 1, 2) != std::string::npos)
+	if (pos + 2 >= uri.size() || !isCharset(HEXDIG, uri[pos + 1]) || !isCharset(HEXDIG, uri[pos + 2]))
 	{
 		_valid = false;
 		return ;
@@ -137,7 +140,7 @@ void Uri::encodeToHex(std::string &uri)
 {
 	for (size_t i = 0; i < uri.size(); ++i)
 	{
-		if (isReserved(uri[i]))
+		if (isCharset(RESERVED, uri[i]))
 		{
 			std::stringstream ss;
 			ss << std::hex << (int)uri[i];
@@ -150,29 +153,9 @@ void Uri::encodeToHex(std::string &uri)
 	}
 }
 
-bool Uri::isPchar(int c)
+bool Uri::isCharset(std::string charset, char c)
 {
-	std::string charset = PCHAR;
-
 	if (charset.find(c) != std::string::npos)
-		return true;
-	return false;
-}
-
-bool Uri::isUserInfo(int c)
-{
-	std::string charset = UNRESERVED SUB_DELIMS;
-
-	if (charset.find(c) != std::string::npos)
-		return true;
-	return false;
-}
-
-bool Uri::isReserved(int c)
-{
-	std::string reserved = RESERVED;
-
-	if (reserved.find(c) != std::string::npos)
 		return true;
 	return false;
 }
