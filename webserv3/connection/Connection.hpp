@@ -17,14 +17,14 @@
 class Connection
 {
 	private:
-		// InfoServer _serverInfo;
 		Multiplex _eventManager;
-		// int _clientSocket;
+
 	public:
 		std::vector<int> _serverSockets;
 		std::map<int, InfoServer> _serverMap;
 		std::map<int, InfoClient> _clientMap;
 		std::map <int, uintptr_t> _fdMap;
+		std::map<int, Response> _responserMap;
 
 	public:
 		std::string _clientReq;

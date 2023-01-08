@@ -431,7 +431,8 @@ Request::Request(const Request &orig) {
 	*this = orig;
 }
 
-Request& Request::operator=(const Request &orig) { ///////// should be modified
+Request &Request::operator=(const Request &orig)
+{ ///////// should be modified
 	_orig = orig._orig;
 	_head = orig._head;
 	_target = orig._target;

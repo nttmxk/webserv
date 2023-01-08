@@ -26,10 +26,10 @@ class InfoClient
 		};
 	public:
 		int _clientSocket;
+		Request req;
 		fileEvent file;
 		InfoServer *_server;
 		std::string reqMsg;
-		Request req;
 		int status;
 
 
@@ -38,6 +38,5 @@ class InfoClient
 		InfoClient()
 		: _clientSocket(-1), _server(nullptr), reqMsg("") {}
 };
-
 
 #endif

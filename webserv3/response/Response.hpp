@@ -14,16 +14,19 @@
 class InfoClient;
 class HttpResInfo;
 
-class Response : public HttpResInfo 
+class Response : public HttpResInfo
 {
 public:
 	Response() : HttpResInfo(), status(PREPARING) {}
-
+public:
 	void responseToClient(int clientSocket, InfoClient &infoClient);
+	void sendToClient();
+
+private:
 	void makeResponseMsg(InfoClient &infoClient);
 	void makeErrorResponseMsg(InfoClient &infoClient, int errorCode);
 	void makeRedirectResponse(InfoClient &infoClient);
-	
+
 	void startResponse(InfoClient &infoClient);
 
 	int	readFd(InfoClient &infoClient, int fd);
@@ -33,10 +36,12 @@ public:
 	void Post();
 	void Delete();
 
+
 	// std::string httpRes2XX();
 	// std::string httpRes3XX();
 	// std::string httpRes4XX();
 	// std::string httpRes500();
+
 public:
 	int status;
 	std::string fileBuff;

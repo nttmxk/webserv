@@ -2,10 +2,10 @@ NAME		=	webserv
 CXX			=	c++
 CXXFLAGS	=	-std=c++98 -pedantic -g3 -fsanitize=address
 SRCS		=	main.cpp \
-				webserv2/HttpServer.cpp \
-				webserv2/connection/Connection.cpp \
-				webserv2/response/Response.cpp \
-				webserv2/connection/Multiplex.cpp \
+				webserv3/HttpServer.cpp \
+				webserv3/connection/Connection.cpp \
+				webserv3/response/Response.cpp \
+				webserv3/connection/Multiplex.cpp \
 				configParser/BaseServer.cpp \
 				configParser/Config.cpp \
 				parseRequest/Request.cpp

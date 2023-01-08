@@ -32,7 +32,6 @@ void Connection::connectionLoop()
 	struct kevent const *currEvent = nullptr;
 	while (true)
 	{
-		Response res;
 		eventsNum = _eventManager.senseEvents();
 		_eventManager.clearChangeList();
 		for (int i = 0; i < eventsNum; ++i)
@@ -50,7 +49,7 @@ void Connection::connectionLoop()
 				}
 				else if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
-					std::cerr << currEvent->ident << " client error case \n";
+					std::cerr << " client error case \n";
 					close(currEvent->ident);
 					_clientMap.erase(currEvent->ident);
 					throw ConnectionError();
@@ -60,7 +59,6 @@ void Connection::connectionLoop()
 			/* read event */
 			else if (currEvent->filter == EVFILT_READ)
 			{
-				
 				if (_serverMap.find(currEvent->ident) != _serverMap.end())
 				{
 					std::cout << "server read event currEvent->ident = " << currEvent->ident  << std::endl;
@@ -87,6 +85,10 @@ void Connection::connectionLoop()
 					infoClient.status = InfoClient::fNone;
 					_clientMap.insert(std::pair<int, InfoClient>(clientSocket, infoClient));
 					_clientMap[clientSocket].reqMsg = "";
+
+					Response responser;
+					_responserMap.insert(std::pair<int, Response>(clientSocket, responser));
+
 				}
 
 				if (_clientMap.find(currEvent->ident) != _clientMap.end())
@@ -111,14 +113,13 @@ void Connection::connectionLoop()
 							_clientMap[currEvent->ident].req.t_result.pStatus != Request::pError) {
 							_clientMap[currEvent->ident].reqMsg.assign(BUFFER_SIZE, 0);
 						}
-						else {
-							// Response responser;
-
-							res.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
-							if (res.status == Response::rComplete) {
+						else
+						{
+							_responserMap[currEvent->ident].responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
+							if (_responserMap[currEvent->ident].status == Response::rComplete) {
 								_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 							}
-							else if (res.status == Response::rError) {
+							else if (_responserMap[currEvent->ident].status == Response::rError) {
 								if (_clientMap[currEvent->ident].status == InfoClient::fMaking) {
 									_eventManager.enrollEventToChangeList(_clientMap[currEvent->ident].file.fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 									_fdMap.insert(std::make_pair(_clientMap[currEvent->ident].file.fd, currEvent->ident));
@@ -133,9 +134,8 @@ void Connection::connectionLoop()
 				}
 				if (_fdMap.find(currEvent->ident) != _fdMap.end())
 				{
-					std::cout << _fdMap[currEvent->ident] << currEvent->ident << std::endl;
 					_clientMap[_fdMap[currEvent->ident]].status = readFile(_clientMap[_fdMap[currEvent->ident]], currEvent->ident);
-					
+
 					switch (_clientMap[_fdMap[currEvent->ident]].status)
 					{
 					case InfoClient::fError:
@@ -147,23 +147,22 @@ void Connection::connectionLoop()
 						std::cout << "fMaking = " << _clientMap[_fdMap[currEvent->ident]].file.buffer << std::endl;
 						break;
 					case InfoClient::fComplete:
-						res.startResponse(_clientMap[currEvent->ident]);
-						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-						std::cout << currEvent->ident << " file reading done\n";
-						
+						//해당 에러페이지를 body 로 갖는 response header 만들기
+						std::cout << "file reading done\n";
 						break;
 					}
-					_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+
+					_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				}
-					
 			}
 
 			/* write event */
 			else if (currEvent->filter == EVFILT_WRITE)
 			{
-				std::cout << "currEvent->filter " << currEvent->filter << "Write\n";
-				_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
-				
+				_responserMap[currEvent->ident].sendToClient();
+				if (_responserMap[currEvent->ident].status == Response::rComplete)
+					_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+
 				//std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
 
 				// Response responser;
@@ -173,7 +172,7 @@ void Connection::connectionLoop()
 				// {
 				// 	_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 				// }
-				
+
 			}
 		}
 	}
@@ -183,7 +182,7 @@ int
 Connection::readFile(InfoClient &infoClient, int fd)
 {
 	char buffer[BUFFER_SIZE];
-	
+
 	memset(buffer, 0, BUFFER_SIZE);
 	ssize_t size = read(fd, &buffer[0], BUFFER_SIZE);
 	if (size < 0)
