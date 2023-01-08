@@ -412,9 +412,10 @@ void	Request::printRequest()
 				"\npStatus:" << t_result.pStatus <<
 				"\nClose:" << t_result.close <<
 				"\nBody:" << t_result.body <<
+				"\nHost:" << t_result.host <<
+				"\nPort:" << t_result.port <<
 				"\nPath:" << t_result.path <<
-				"\nQuery:" << t_result.query <<
-				"\nHost:" << t_result.host
+				"\nQuery:" << t_result.query
 				;
 	std::cout << " \n[Header Info]\n";
 	for (std::map<std::string, std::string>::iterator it = t_result.header.begin(); it != t_result.header.end() ; ++it) {
