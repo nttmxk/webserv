@@ -121,8 +121,16 @@ void Request::checkTarget()
 {
 	if (_target.size() > SIZE_MAX_URI)
 		return errorStatus("# URI Too long\n", 414, pError);
-	//	Uri uriParser;
-	//	uriParser.parseTarget(_target);
+
+	Uri uriParser;
+	uriParser.parseTarget(_target);
+	if (!uriParser._valid)
+		return errorStatus("# URI Error in UriParser\n", 400, pError);
+	t_result.host = uriParser._host;
+	t_result.port = uriParser._port;
+	t_result.path = uriParser._path;
+	t_result.query = uriParser._query;
+
 }
 
 /**
