@@ -2,6 +2,7 @@
 # define URI_HPP
 
 # include <iostream>
+# include <sstream>
 
 /** Uri class
  * author: jinoh
@@ -18,8 +19,8 @@
 # define GEN_DELIMS ":/?#[]@"
 # define SUB_DELIMS "!$&'()*+,;="
 # define RESERVED GEN_DELIMS SUB_DELIMS
-# define UNRESERVED ALPHA | DIGIT | "-._~"
-# define PCHAR UNRESERVED | SUB_DELIMS | ":@"
+# define UNRESERVED ALPHA DIGIT "-._~"
+# define PCHAR UNRESERVED SUB_DELIMS ":@"
 
 //# define VCHAR %x21-7E
 

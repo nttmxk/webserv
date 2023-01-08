@@ -49,9 +49,9 @@ void Uri::checkHier(std::string &uri, size_t &pos)
 	if (uri[pos + 1] == '/')
 		checkAuth(uri, pos);
 	if (_valid)
-		checkPath();
+		checkPath(uri, pos);
 	if (_valid)
-		checkQuery();
+		checkQuery(uri, pos);
 }
 
 void Uri::checkAuth(std::string &uri, size_t &pos)

@@ -15,11 +15,8 @@ CC = c++
 #CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRCS =	main.cpp \
-		Request.cpp
-#		parse_body.cpp \
-#		parse_header.cpp \
-#		parse_requestline.cpp \
-#		parse_utils.cpp \
+		Request.cpp \
+		Uri.cpp
 
 OBJS = $(SRCS:%.cpp=%.o)
 
