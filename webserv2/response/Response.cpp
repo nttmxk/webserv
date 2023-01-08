@@ -122,20 +122,33 @@ Response::makeResponseMsg(InfoClient &infoClient)
 	// }
 }
 
+void
+Response::initResponse(InfoClient &infoClient)
+{
+	setStatusCode(infoClient.req.t_result.status);
+	setStatusMsg(getStatusMsg(getStatusCode()));
+	setDate();
+	setConnection("keep-alive");
+	setContentType("html");
+	setTransferEncoding("identity");
+	setContentLength(infoClient.file.buffer.size());
+	setBody(infoClient.file.buffer);
+}
 
 void
 Response::startResponse(InfoClient &infoClient)
 {
-	setStatusCode(infoClient.req.t_result.status);
-	//setStatusMsg();
-	// setConnection();
-	// setContentType();
-	// setTransferEncoding();
-	// setContentLength();
-	// setContentEncoding();
-	setBody(infoClient.file.buffer);
+	initResponse(infoClient);
+	_result += getHttpVersion() + " " + std::to_string(getStatusCode()) + CRLF;
+	_result += "Connection : " + getConnection() + CRLF;
+	_result += "Date : " + getDate() + CRLF;
+	_result += "Server : " + getServer() + CRLF;
+	_result += "Content-type : " + getContentType() + CRLF;
+	_result += "Transfer-Encoding : " + getTransferEncoding() + CRLF;
+	_result += "Content-Length : " + std::to_string(getContentLength()) + CRLF;
+	_result += "\n";
+	_result += infoClient.file.buffer;
 }
-
 
 bool
 Response::cgiFinder(InfoClient &infoClient)
@@ -211,3 +224,5 @@ Response::redirectionFinder(InfoClient &infoClient)
 // std::string
 // Response::httpRes500()
 // {}
+
+

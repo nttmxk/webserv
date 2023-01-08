@@ -20,5 +20,6 @@ response class
 */
 #define PREPARING 0
 #define DONE 1
+#define CRLF "\r\n"
 
 #endif

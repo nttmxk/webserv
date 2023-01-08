@@ -147,7 +147,8 @@ void Connection::connectionLoop()
 						std::cout << "fMaking = " << _clientMap[_fdMap[currEvent->ident]].file.buffer << std::endl;
 						break;
 					case InfoClient::fComplete:
-						res.startResponse(_clientMap[currEvent->ident]);
+						res.startResponse(_clientMap[_fdMap[currEvent->ident]]);
+						
 						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 						std::cout << currEvent->ident << " file reading done\n";
 						
@@ -159,9 +160,10 @@ void Connection::connectionLoop()
 			}
 
 			/* write event */
-			else if (currEvent->filter == EVFILT_WRITE)
+			 if (currEvent->filter == EVFILT_WRITE)
 			{
 				std::cout << "currEvent->filter " << currEvent->filter << "Write\n";
+				std::cout << res.getResult() << std::endl;
 				_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				
 				//std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
