@@ -13,7 +13,8 @@ void Uri::parseTarget(std::string &uri) // rfc 3986
 	else if (uri[0] == '/')
 	{
 		checkPath(uri, pos);
-		checkQuery(uri, pos);
+		if (_valid && uri[pos] == '?')
+			checkQuery(uri, pos);
 	}
 	else
 		_valid = false;
@@ -53,7 +54,7 @@ void Uri::checkHier(std::string &uri, size_t &pos)
 		checkAuth(uri, pos);
 	if (_valid)
 		checkPath(uri, pos);
-	if (_valid)
+	if (_valid && uri[pos] == '?')
 		checkQuery(uri, pos);
 }
 
@@ -84,10 +85,9 @@ void Uri::checkAuth(std::string &uri, size_t &pos)
 			pos++;
 		_port = uri.substr(start_port, pos - start_port);
 	}
-	pos = start;
 }
 
-void Uri::checkPath(std::string &uri, size_t pos)
+void Uri::checkPath(std::string &uri, size_t &pos)
 {
 	size_t	start;
 
@@ -102,7 +102,6 @@ void Uri::checkPath(std::string &uri, size_t pos)
 			_valid = false;
 	}
 	_path = uri.substr(start, pos - start);
-	pos = start;
 }
 
 void Uri::checkQuery(std::string &uri, size_t pos)
@@ -116,6 +115,8 @@ void Uri::checkQuery(std::string &uri, size_t pos)
 			pos++;
 		else if (uri[pos] == '%')  // it is sometimes better for usability to avoid percent-encoding those characters ???
 			pos++; // it sounds vague...
+		else if (uri[pos] == '#')
+			break ;
 		else
 			_valid = false;
 	}

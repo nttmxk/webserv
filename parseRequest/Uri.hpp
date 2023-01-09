@@ -42,7 +42,7 @@ private:
 	void	checkScheme(std::string &uri, size_t &pos);
 	void	checkHier(std::string &uri, size_t &pos);
 	void	checkAuth(std::string &uri, size_t &pos);
-	void	checkPath(std::string &uri, size_t pos);
+	void	checkPath(std::string &uri, size_t &pos);
 	void	checkQuery(std::string &uri, size_t pos);
 	void	decodeHex(std::string &uri, size_t pos);
 	void	encodeToHex(std::string &uri);
