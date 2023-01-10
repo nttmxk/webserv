@@ -30,6 +30,7 @@ void 		Request::updateStatus(int status, int pStatus) {
  */
 void	Request::parseMessage(std::string message)
 {
+	_orig += message;
 	_buf += message;
 	if (t_result.pStatus == pRequest)
 		parseRequestLine();
