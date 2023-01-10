@@ -1,5 +1,7 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
+
+# include "Uri.hpp"
 # include <iostream>
 # include <algorithm>
 # include <map>
@@ -42,9 +44,10 @@ public:
 		bool close;
 		std::map<std::string, std::string> header;
 		std::string body;
-		std::string path; // target = (host) + path + query
-		std::string query;
 		std::string host;
+		std::string port;
+		std::string path;
+		std::string query;
 	}	t_result;
 
 	void 		clearRequest();
@@ -63,6 +66,7 @@ private:
 	std::string	_target;
 	std::string	_version;	// no need?
 	int 		_bodyLength;
+	bool		_chunkReady;
 	bool		_chunked;
 	void		parseRequestLine();
 	void 		checkMethod(std::string &mControl);

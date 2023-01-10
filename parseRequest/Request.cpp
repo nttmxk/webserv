@@ -121,8 +121,16 @@ void Request::checkTarget()
 {
 	if (_target.size() > SIZE_MAX_URI)
 		return errorStatus("# URI Too long\n", 414, pError);
-	//	Uri uriParser;
-	//	uriParser.parseTarget(_target);
+
+	Uri uriParser;
+	uriParser.parseTarget(_target);
+	if (!uriParser._valid)
+		return errorStatus("# URI Error in UriParser\n", 400, pError);
+	t_result.host = uriParser._host;
+	t_result.port = uriParser._port;
+	t_result.path = uriParser._path;
+	t_result.query = uriParser._query;
+
 }
 
 /**
@@ -292,7 +300,7 @@ void	Request::parseBody()
 	/* TE -> transfer-encoding: chunked
 	 * CL -> content-length
 	 * only TE -> _bodyLength = -1 and _chunked = true -> _bodyLength != -1 and _chunked = true
-	 * both No -> _bodyLength = -1 and _chunked = false
+	 * both No -> _bodyLength = -1 and _chunked = false -> message without body
 	 * only CL -> _bodyLength >= 0 and _chunked = false
 	 */
 	if (_chunked)
@@ -303,6 +311,7 @@ void	Request::parseBody()
 		return ;
 	}
 	t_result.body += _orig;
+	_orig.clear();
 	if (t_result.body.size() >= _bodyLength)
 	{
 		t_result.pStatus = pComplete;
@@ -313,16 +322,17 @@ void	Request::parseBody()
 
 /**
  * 	@brief	parsing chunked content
- * 	@param	starting position of the content message
  */
 void 	Request::parseChunked()
 {
-	if (_bodyLength == -1)
-		getChunkSize();
-	if (t_result.pStatus != pComplete && t_result.pStatus != pError)
-		getChunkMessage();
-	if (_bodyLength == -1)
-		getChunkSize();
+	_chunkReady = true;
+	while (_chunkReady && t_result.pStatus == pBody)
+	{
+		if (_bodyLength == -1)
+			getChunkSize();
+		if (_bodyLength != -1 && t_result.pStatus == pBody)
+			getChunkMessage();
+	}
 }
 
 /**
@@ -337,6 +347,7 @@ void 	Request::getChunkSize()
 	{
 		if (_orig.size() > SIZE_MAX_CHUNK + 1)
 			return errorStatus("Chunk message Too Long\n", 400, pError);
+		_chunkReady = false;
 		return ;
 	}
 
@@ -372,6 +383,7 @@ void	Request::getChunkMessage()
 	{
 		if (_orig.size() > 4095 + 1)
 			return errorStatus("Chunk message second CRLF error", 400, pError);
+		_chunkReady = false;
 		return ;
 	}
 
@@ -400,9 +412,10 @@ void	Request::printRequest()
 				"\npStatus:" << t_result.pStatus <<
 				"\nClose:" << t_result.close <<
 				"\nBody:" << t_result.body <<
+				"\nHost:" << t_result.host <<
+				"\nPort:" << t_result.port <<
 				"\nPath:" << t_result.path <<
-				"\nQuery:" << t_result.query <<
-				"\nHost:" << t_result.host
+				"\nQuery:" << t_result.query
 				;
 	std::cout << " \n[Header Info]\n";
 	for (std::map<std::string, std::string>::iterator it = t_result.header.begin(); it != t_result.header.end() ; ++it) {
