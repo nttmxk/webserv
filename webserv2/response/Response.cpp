@@ -27,6 +27,7 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 		std::cout << "redirect message\n\n";
 	}
 	else if (cgiFinder(infoClient)) {
+		std::cout << "cgiFinder message\n\n";
 		// makeCgiResponseMsg(infoClient);
 		//cgi 객체 생성후 요청
 	}
@@ -34,7 +35,7 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 		makeResponseMsg(infoClient);
 	}
 	//sendReseponse(clientSocket);
-	infoClient.req.clearRequest();
+	//infoClient.req.clearRequest();
 	
 	//(void)infoClient; // to be used
 
@@ -45,6 +46,22 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 	// close(clientSocket);
 }
 
+
+void
+Response::sendToClient(InfoClient &infoClient)
+{
+	// std::cout <<"sendToClient = " << infoClient._clientSocket << std::endl;
+	long valWrite = write(infoClient._clientSocket, getResult().c_str(), getResult().size());
+	if (valWrite == (long)getResult().size())
+	{
+		status = rComplete;
+		std::cout << "SERVER RESPONSE SENT\n";
+	}
+	else
+	{
+		status = rSending;
+	}
+}
 
 /*
 
@@ -81,6 +98,7 @@ Response::makeErrorResponseMsg(InfoClient &infoClient, int errorCode)
 			std::cout << "errorPath failier" << std::endl;
 		else
 		{
+			std::cout <<"file size = "<< ss.st_size << std::endl;
 			std::cout << "fd = "<< fd<<std::endl;
 			fcntl(fd, F_SETFL, O_NONBLOCK);
 			infoClient.file.fd = fd;
@@ -119,7 +137,10 @@ Response::initResponse(InfoClient &infoClient)
 	setStatusCode(infoClient.req.t_result.status);
 	setStatusMsg(getStatusMsg(getStatusCode()));
 	setDate();
-	setConnection("keep-alive");
+	if (infoClient.req.t_result.close == true)
+		setConnection("keep_alive");
+	else
+		setConnection("close");
 	setContentType("html");
 	setTransferEncoding("identity");
 	setContentLength(infoClient.file.buffer.size());
@@ -144,8 +165,8 @@ Response::startResponse(InfoClient &infoClient)
 bool
 Response::cgiFinder(InfoClient &infoClient)
 {
-	// std::string str = infoClient.req.t_result.path;
-	std::string str = "https://robodream.tistory.com/418";
+	std::string str = infoClient.req.t_result.path;
+	//std::string str = "https://robodream.tistory.com/418.py";
 	size_t sub;
 
 	if ((sub = str.rfind(".")) != std::string::npos)
@@ -160,8 +181,8 @@ Response::cgiFinder(InfoClient &infoClient)
 bool
 Response::redirectionFinder(InfoClient &infoClient)
 {
-	// std::string str = infoClient.req.t_result.path;
-	std::string str = "https://robodream.tistory.com/redirectaa";
+	std::string str = infoClient.req.t_result.path;
+	//std::string str = "https://robodream.tistory.com/redirectaa";
 	size_t sub;
 
 	if ((sub = str.rfind("/")) != std::string::npos)

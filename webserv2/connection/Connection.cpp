@@ -32,11 +32,14 @@ void Connection::connectionLoop()
 	struct kevent const *currEvent = nullptr;
 	while (true)
 	{
-		Response res;
+		std::cout << "\n\n\n\nwhile\n";
+		std::cout << "file_map size = " << _fdMap.size() << std::endl;
+		std::cout << "client map size = " << _clientMap.size() << std::endl;
 		eventsNum = _eventManager.senseEvents();
 		_eventManager.clearChangeList();
 		for (int i = 0; i < eventsNum; ++i)
 		{
+			std::cout << "***for eventsNum = " << eventsNum<< std::endl;
 			currEvent = const_cast<struct kevent const *>(&(_eventManager.getEventList()[i]));
 
 			/* error case */
@@ -44,7 +47,8 @@ void Connection::connectionLoop()
 			{
 				if (_serverMap.find(currEvent->ident) != _serverMap.end())
 				{
-					// close(currEvent->ident);
+					_serverMap.erase(_serverMap.find(currEvent->ident));
+					close(currEvent->ident);
 					std::cerr << " server error case \n";
 					throw ConnectionError();
 				}
@@ -52,18 +56,21 @@ void Connection::connectionLoop()
 				{
 					std::cerr << currEvent->ident << " client error case \n";
 					close(currEvent->ident);
-					_clientMap.erase(currEvent->ident);
+					_clientMap.erase(_clientMap.find(currEvent->ident));
 					throw ConnectionError();
 				}
+				// _fdMap.erase(_fdMap.find(currEvent->ident)->first);
+				// close(currEvent->ident);
 			}
 
 			/* read event */
-			else if (currEvent->filter == EVFILT_READ)
+			if (currEvent->filter == EVFILT_READ)
 			{
-				
+				std::cout << "EVFILT_READ ident = " << currEvent->ident << std::endl;;
+			
 				if (_serverMap.find(currEvent->ident) != _serverMap.end())
 				{
-					std::cout << "server read event currEvent->ident = " << currEvent->ident  << std::endl;
+					std::cout << "server read event = " << currEvent->ident  << std::endl;
 					int clientSocket = accept(currEvent->ident, (sockaddr *)&_serverMap[currEvent->ident]._serverAddr, &_serverMap[currEvent->ident]._serverAddrLen);
 					// std::cout << "	accepted client socket : " << clientSocket << "\n"; // test code
 					if (clientSocket == FAIL)
@@ -85,8 +92,12 @@ void Connection::connectionLoop()
 					infoClient._clientSocket = clientSocket;
 					infoClient._server = &_serverMap[currEvent->ident];
 					infoClient.status = InfoClient::fNone;
+					std::cout << "\n\n INSER CLIENT : " << clientSocket << "\n\n";
 					_clientMap.insert(std::pair<int, InfoClient>(clientSocket, infoClient));
 					_clientMap[clientSocket].reqMsg = "";
+
+					Response tmpResponser;
+					_responserMap.insert(std::pair<int, Response>(clientSocket, tmpResponser));
 				}
 
 				if (_clientMap.find(currEvent->ident) != _clientMap.end())
@@ -112,48 +123,65 @@ void Connection::connectionLoop()
 							_clientMap[currEvent->ident].reqMsg.assign(BUFFER_SIZE, 0);
 						}
 						else {
-							// Response responser;
-
-							res.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
-							if (res.status == Response::rComplete) {
+							//_clientMap[currEvent->ident].req.printRequest();
+							_responserMap[currEvent->ident].responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
+							//res.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
+							if (_responserMap[currEvent->ident].status == Response::rComplete) {
+								std::cout << "Response::rComplete\n";
 								_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 							}
-							else if (res.status == Response::rError) {
+							else if (_responserMap[currEvent->ident].status == Response::rError) {
 								if (_clientMap[currEvent->ident].status == InfoClient::fMaking) {
+									std::cout << "file fd = " <<_clientMap[currEvent->ident].file.fd << std::endl;
 									_eventManager.enrollEventToChangeList(_clientMap[currEvent->ident].file.fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 									_fdMap.insert(std::make_pair(_clientMap[currEvent->ident].file.fd, currEvent->ident));
 									std::cout << "read agin fd = " << _clientMap[currEvent->ident].file.fd << " currEvent = " << currEvent->ident <<std::endl;;
 								}
 								else if (_clientMap[currEvent->ident].status == InfoClient::fComplete) {
+									std::cout << "InfoClient::fComplete\n";
+									_clientMap[currEvent->ident].status = InfoClient::fNone;
+									_responserMap[currEvent->ident].status == Response::rNone;
 									_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 								}
 							}
 						}
 					}
+					//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				}
 				if (_fdMap.find(currEvent->ident) != _fdMap.end())
 				{
-					std::cout << _fdMap[currEvent->ident] << currEvent->ident << std::endl;
-					_clientMap[_fdMap[currEvent->ident]].status = readFile(_clientMap[_fdMap[currEvent->ident]], currEvent->ident);
+					std::cout << "file event = " << currEvent->ident << std::endl;
+					std::cout << _fdMap[currEvent->ident] << std::endl;
+					int res = readFile(_clientMap[_fdMap[currEvent->ident]], currEvent->ident);
+					// if (res == InfoClient::fError)
+					// 	exit(1);
+					// 	_clientMap[_fdMap[currEvent->ident]].status 
 					
-					switch (_clientMap[_fdMap[currEvent->ident]].status)
+					switch (res)
 					{
 					case InfoClient::fError:
 						//500 error page open
-						std::cout << "fError" << std::endl;
+						std::cout << "fError" << std::endl;//close 했기 때문에 ...처리 별도 필요
 						break;
 					case InfoClient::fMaking:
 						//keep reading
 						std::cout << "fMaking = " << _clientMap[_fdMap[currEvent->ident]].file.buffer << std::endl;
 						break;
 					case InfoClient::fComplete:
-						res.startResponse(_clientMap[_fdMap[currEvent->ident]]);
+						_responserMap[_fdMap[currEvent->ident]].startResponse(_clientMap[_fdMap[currEvent->ident]]);
+						// res.startResponse(_clientMap[_fdMap[currEvent->ident]]);
+						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-						std::cout << currEvent->ident << " file reading done\n";
-						
+						std::cout << "_fdMap.find(currEvent->ident) = " << _fdMap.find(currEvent->ident)->first << std::endl;
+						std::cout << "before size = " << _fdMap.size();
+						//_fdMap.erase(_fdMap.find(currEvent->ident)->first);
+						std::cout << "\nafter size = " << _fdMap.size() << std::endl;
+						std::cout << currEvent->ident << " file reading done. open client " << _fdMap[currEvent->ident] << std::endl;;
+						close(currEvent->ident);
+						_fdMap.erase(_fdMap.find(currEvent->ident)->first);
 						break;
 					}
-					_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+					//_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				}
 					
 			}
@@ -161,19 +189,34 @@ void Connection::connectionLoop()
 			/* write event */
 			 if (currEvent->filter == EVFILT_WRITE)
 			{
-				std::cout << "currEvent->filter " << currEvent->filter << "Write\n";
-				std::cout << res.getResult() << std::endl;
-				_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
-				
-				//std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
+				// _eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+				if (_clientMap.find(currEvent->ident) != _clientMap.end())
+				{
+					std::cout << "EVFILT_WRITE = " << currEvent->ident << std::endl;
+					std::cout << _responserMap[currEvent->ident].getResult() << std::endl;
+					_responserMap[currEvent->ident].sendToClient(_clientMap[currEvent->ident]);
+					if (_responserMap[currEvent->ident].status == Response::rComplete)
+					{
+						std::cout << "Response::rComplete\n";
+						//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+						_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+						_responserMap.erase(_responserMap.find(currEvent->ident));
+						if (_responserMap.find(currEvent->ident) != _responserMap.end())
+							std::cout << "not erased\n\n";
+						_clientMap.find(currEvent->ident)->second.clear();
+					}
+					else if (_responserMap[currEvent->ident].status == Response::rError)
+					{
+						std::cout << "eError\n";
+					}
+					//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+					close(currEvent->ident);
+					_clientMap.erase(currEvent->ident);
+						
+				}
+				std::cout << "here\n";
+			
 
-				// Response responser;
-
-				// responser.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
-				// if (responser.status == Response::rComplete || responser.status == Response::rError)
-				// {
-				// 	_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-				// }
 				
 			}
 		}
@@ -190,15 +233,18 @@ Connection::readFile(InfoClient &infoClient, int fd)
 	if (size < 0)
 	{
 		close(fd);
+		_fdMap.erase(fd);
 		infoClient.file.buffer.clear();
 		return InfoClient::fError;
 	}
 	infoClient.file.buffer += std::string(buffer, size);
 	if (size < BUFFER_SIZE)
 	{
-		close(fd);
+		// close(fd);
+		// _fdMap.erase(fd);
 		return InfoClient::fComplete;
 	}
+	std::cout << "return fmaking\n\n";
 	return InfoClient::fMaking;
 }
 

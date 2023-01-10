@@ -17,23 +17,6 @@ class HttpResInfo;
 class Response : public HttpResInfo
 {
 public:
-<<<<<<< HEAD:webserv2/response/Response.hpp
-	Response() : HttpResInfo(), status(PREPARING), _result("") { }
-
-	void	responseToClient(int clientSocket, InfoClient &infoClient);
-	void	makeResponseMsg(InfoClient &infoClient);
-	void	makeErrorResponseMsg(InfoClient &infoClient, int errorCode);
-	void	makeRedirectResponse(InfoClient &infoClient);
-	void	startResponse(InfoClient &infoClient);
-	void	initResponse(InfoClient &infoClient);
-	int		  readFd(InfoClient &infoClient, int fd);
-	bool	cgiFinder(InfoClient &infoClient);
-	bool	redirectionFinder(InfoClient &infoClient);
-	void	Get();
-	void	Post();
-	void	Delete();
-	std::string getResult(){return _result;}
-=======
 	Response() : HttpResInfo(), status(PREPARING) {}
 public:
 	void responseToClient(int clientSocket, InfoClient &infoClient);
@@ -52,7 +35,6 @@ private:
 	void Get();
 	void Post();
 	void Delete();
->>>>>>> origin/response_LOGIC_GET:webserv3/response/Response.hpp
 
 
 	// std::string httpRes2XX();

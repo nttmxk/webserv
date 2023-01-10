@@ -17,15 +17,17 @@ class HttpResInfo;
 class Response : public HttpResInfo 
 {
 public:
-	Response() : HttpResInfo(), status(PREPARING), _result("") { }
-
+	Response() : HttpResInfo(), status(rNone), _result("") { }
+public:
 	void	responseToClient(int clientSocket, InfoClient &infoClient);
+	void	sendToClient(InfoClient &infoClient);
+
 	void	makeResponseMsg(InfoClient &infoClient);
 	void	makeErrorResponseMsg(InfoClient &infoClient, int errorCode);
 	void	makeRedirectResponse(InfoClient &infoClient);
 	void	startResponse(InfoClient &infoClient);
 	void	initResponse(InfoClient &infoClient);
-	int		  readFd(InfoClient &infoClient, int fd);
+	int		readFd(InfoClient &infoClient, int fd);
 	bool	cgiFinder(InfoClient &infoClient);
 	bool	redirectionFinder(InfoClient &infoClient);
 	void	Get();
@@ -51,9 +53,11 @@ protected:
 
 public:
 	enum {
+	rNone = -1,
 	rMaking = 0,
 	rComplete,
-	rError
+	rError,
+	rSending
 	};
 };
 

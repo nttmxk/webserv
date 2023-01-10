@@ -147,16 +147,8 @@ void Connection::connectionLoop()
 						std::cout << "fMaking = " << _clientMap[_fdMap[currEvent->ident]].file.buffer << std::endl;
 						break;
 					case InfoClient::fComplete:
-<<<<<<< HEAD:webserv2/connection/Connection.cpp
-						res.startResponse(_clientMap[_fdMap[currEvent->ident]]);
-						
-						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-						std::cout << currEvent->ident << " file reading done\n";
-						
-=======
 						//해당 에러페이지를 body 로 갖는 response header 만들기
 						std::cout << "file reading done\n";
->>>>>>> origin/response_LOGIC_GET:webserv3/connection/Connection.cpp
 						break;
 					}
 
@@ -167,17 +159,10 @@ void Connection::connectionLoop()
 			/* write event */
 			 if (currEvent->filter == EVFILT_WRITE)
 			{
-<<<<<<< HEAD:webserv2/connection/Connection.cpp
-				std::cout << "currEvent->filter " << currEvent->filter << "Write\n";
-				std::cout << res.getResult() << std::endl;
-				_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
-				
-=======
 				_responserMap[currEvent->ident].sendToClient();
 				if (_responserMap[currEvent->ident].status == Response::rComplete)
 					_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 
->>>>>>> origin/response_LOGIC_GET:webserv3/connection/Connection.cpp
 				//std::map<int, InfoClient>::iterator it = _clientMap.find(currEvent->ident);
 
 				// Response responser;

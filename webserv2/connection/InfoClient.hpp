@@ -37,6 +37,15 @@ class InfoClient
 	public:
 		InfoClient()
 		: _clientSocket(-1), _server(nullptr), reqMsg("") {}
+		void clear() {
+			file.buffer.clear();
+			file.fd = -1;
+			file.size = 0;
+			reqMsg = "";
+			req.clearRequest();
+			status =fNone;
+			
+		};
 };
 
 
