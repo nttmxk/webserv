@@ -45,16 +45,7 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 	// close(clientSocket);
 }
 
-// int
-// vecterIntExist(std::vector <int> const &a) {
-// 	for(int i=0; i < a.size(); i++)
-// 	{
-// 		if (a.at(i))
-			
-// 	}
-// 		std::cout << a.at(i) << '\n';
-// 	std::cout << "\n\n\n";
-// }
+
 /*
 
 
