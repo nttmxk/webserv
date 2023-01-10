@@ -121,8 +121,16 @@ void Request::checkTarget()
 {
 	if (_target.size() > SIZE_MAX_URI)
 		return errorStatus("# URI Too long\n", 414, pError);
-	//	Uri uriParser;
-	//	uriParser.parseTarget(_target);
+
+	Uri uriParser;
+	uriParser.parseTarget(_target);
+	if (!uriParser._valid)
+		return errorStatus("# URI Error in UriParser\n", 400, pError);
+	t_result.host = uriParser._host;
+	t_result.port = uriParser._port;
+	t_result.path = uriParser._path;
+	t_result.query = uriParser._query;
+
 }
 
 /**
@@ -404,9 +412,10 @@ void	Request::printRequest()
 				"\npStatus:" << t_result.pStatus <<
 				"\nClose:" << t_result.close <<
 				"\nBody:" << t_result.body <<
+				"\nHost:" << t_result.host <<
+				"\nPort:" << t_result.port <<
 				"\nPath:" << t_result.path <<
-				"\nQuery:" << t_result.query <<
-				"\nHost:" << t_result.host
+				"\nQuery:" << t_result.query
 				;
 	std::cout << " \n[Header Info]\n";
 	for (std::map<std::string, std::string>::iterator it = t_result.header.begin(); it != t_result.header.end() ; ++it) {
