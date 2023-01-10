@@ -405,7 +405,7 @@ void	Request::getChunkMessage()
 	if (pos != _bodyLength)
 		return errorStatus("Chunk message length doesn't match\n", 400, pError);
 	t_result.body += _buf.substr(0, pos);
-	if (t_result.body >= SIZE_MAX_BODY)
+	if (t_result.body.size() >= SIZE_MAX_BODY)
 	{
 		t_result.close = true;
 		return errorStatus("413 Payload Too Large\n", 413, pError);

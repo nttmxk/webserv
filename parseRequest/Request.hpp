@@ -49,6 +49,7 @@ public:
 		std::string path;
 		std::string query;
 	}	t_result;
+	std::string _orig;
 
 	void 		clearRequest();
 
@@ -61,7 +62,6 @@ public:
 	Request& operator=(const Request &orig);
 
 private:
-	std::string _orig
 	std::string	_buf;
 	std::string	_head;
 	std::string	_target;
