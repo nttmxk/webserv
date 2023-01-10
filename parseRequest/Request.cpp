@@ -327,10 +327,10 @@ void	Request::parseBody()
 		t_result.close = true;
 		return errorStatus("413 Payload Too Large\n", 413, pError);
 	}
-	if (t_result.body.size() >= _bodyLength)
+	if ((int)t_result.body.size() >= _bodyLength)
 	{
 		t_result.pStatus = pComplete;
-		if (t_result.body.size() != _bodyLength)
+		if ((int)t_result.body.size() != _bodyLength)
 			t_result.body.erase(_bodyLength); // should be checked
 	}
 }
@@ -402,7 +402,7 @@ void	Request::getChunkMessage()
 		return ;
 	}
 
-	if (pos != _bodyLength)
+	if ((int)pos != _bodyLength)
 		return errorStatus("Chunk message length doesn't match\n", 400, pError);
 	t_result.body += _buf.substr(0, pos);
 	if (t_result.body.size() >= SIZE_MAX_BODY)
