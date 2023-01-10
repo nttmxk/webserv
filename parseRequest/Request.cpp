@@ -258,19 +258,28 @@ void 	Request::checkBodyLength()
 	else
 	{
 		if (it->second.find_first_not_of(DIGIT) != std::string::npos)
+		{
+			t_result.close = true;
 			return errorStatus("CL should only include DIGIT\n", 400, pError);
+		}
 		std::stringstream ss(it->second);
 		ss >> _bodyLength;
 		///////////// client_max_body_size check
 		if (it->second.size() > 4 || _bodyLength > SIZE_MAX_BODY)
-			return errorStatus("Body Length Too Long\n", 400, pError);
+		{
+			t_result.close = true;
+			return errorStatus("413 Payload Too Large\n", 413, pError);
+		}
 	}
 
 	it = t_result.header.find("transfer-encoding");
 	if (it != t_result.header.end())
 	{
 		if (_bodyLength != -1)
+		{
+			t_result.close = true;
 			return errorStatus("CL and TE are both exist\n", 400, pError);
+		}
 		if (it->second.compare("chunked") == 0)
 			_chunked = true;
 		else
@@ -312,6 +321,11 @@ void	Request::parseBody()
 	}
 	t_result.body += _orig;
 	_orig.clear();
+	if (t_result.body.size() >= SIZE_MAX_BODY)
+	{
+		t_result.close = true;
+		return errorStatus("413 Payload Too Large\n", 413, pError);
+	}
 	if (t_result.body.size() >= _bodyLength)
 	{
 		t_result.pStatus = pComplete;
@@ -390,6 +404,11 @@ void	Request::getChunkMessage()
 	if (pos != _bodyLength)
 		return errorStatus("Chunk message length doesn't match\n", 400, pError);
 	t_result.body += _orig.substr(0, pos);
+	if (t_result.body >= SIZE_MAX_BODY)
+	{
+		t_result.close = true;
+		return errorStatus("413 Payload Too Large\n", 413, pError);
+	}
 	_orig.erase(0, pos + 2);
 	_bodyLength = -1;
 }
