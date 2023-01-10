@@ -61,7 +61,8 @@ public:
 	Request& operator=(const Request &orig);
 
 private:
-	std::string	_orig;
+	std::string _orig
+	std::string	_buf;
 	std::string	_head;
 	std::string	_target;
 	std::string	_version;	// no need?
@@ -77,7 +78,6 @@ private:
 	void		parseHeader();
 	void		tokenizeHeader();
 	bool		isOWS(int c);
-	void		checkHeader();
 	void 		verifyHeader();
 	void 		checkHost();
 	void 		checkBodyLength();
