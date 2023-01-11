@@ -34,29 +34,18 @@ class HttpResInfo
 		unsigned int _contentLength;
 		std::string _contentEncoding; //gzip etc
 		std::string _resBody; // HTML Body :  <body> ... </body>
-		std::map<int, std::string> _statusMsgMap;
+		std::map<int, std::string> _statusMap;
 
 	public:
 		HttpResInfo()
 		: _httpVersion("HTTP/1.1"), _statusCode(0), _statusMsg(""), _connection(""), _date(""), \
-		_server("webserv /1.0"), _contentType(""), _transferEncoding(""), _contentLength(0), _contentEncoding(""), _resBody("") { setStatusMsgMap();}
+		_server("webserv /1.0"), _contentType(""), _transferEncoding(""), _contentLength(0), _contentEncoding(""), _resBody("") { 
+			initStatusMap();
+		}
 		void setStatusCode(int code) { _statusCode = code; }
 		void setStatusMsg(std::string msg) { _statusMsg = msg; }
 		void setConnection(std::string connection) { _connection = connection; }
-		void setContentType(std::string path_type ) { 
-			if (path_type == "html")
-				_contentType = "text/html";
-			else if (path_type == "txt")
-				_contentType = "text/html";
-			else
-				_contentType = "text/plain";
-			// else if (path_type == "html")
-			// 	_contentType = "text/html";
-			// else if (path_type == "html")
-			// 	_contentType = "text/html";
-			// else if (path_type == "html")
-			// 	_contentType = "text/html";
-		}
+		void setContentType(std::string path_type ) { _contentType = path_type; }
 		void setTransferEncoding(std::string encod ) { _transferEncoding = encod; }
 		void setContentLength(unsigned int len) { _contentLength = len; }
 		void setContentEncoding(std::string encod ) { _contentEncoding = encod; }
@@ -64,11 +53,7 @@ class HttpResInfo
 		void setDate( ) { _date = timeStamp(); }
 		std::string getHttpVersion() {return (_httpVersion);}
 		int getStatusCode() { return (_statusCode); }
-		std::string getStatusMsg(int code) {
-			if (_statusMsgMap.find(code) != _statusMsgMap.end())
-				return _statusMsgMap[code];
-			 return ("nothinf"); 
-		}
+		std::string getStatusMsg() { return (_statusMsg); }
 		std::string getConnection() { return (_connection);}
 		std::string getDate() { return (_date); }
 		std::string getServer() { return (_server); }
@@ -100,48 +85,48 @@ class HttpResInfo
 			ss << time->tm_sec << " GMT";
 			return (ss.str());
 		}
-		void setStatusMsgMap()
+		void initStatusMap()
 		{
-			_statusMsgMap[100] = "Continue";
-			_statusMsgMap[101] = "Switching Protocols";
-			_statusMsgMap[200] = "OK";
-			_statusMsgMap[201] = "Created";
-			_statusMsgMap[202] = "Accepted";
-			_statusMsgMap[203] = "Non-Authoritative Information";
-			_statusMsgMap[204] = "No Content";
-			_statusMsgMap[205] = "Reset Content";
-			_statusMsgMap[206] = "Partial Content";
-			_statusMsgMap[300] = "Multiple Choices";
-			_statusMsgMap[301] = "Moved Permanently";
-			_statusMsgMap[302] = "Found";
-			_statusMsgMap[303] = "See Other";
-			_statusMsgMap[304] = "Not Modified";
-			_statusMsgMap[305] = "Use Proxy";
-			_statusMsgMap[307] = "Temporary Redirect";
-			_statusMsgMap[400] = "Bad Request";
-			_statusMsgMap[401] = "Unauthorized";
-			_statusMsgMap[402] = "Payment Required";
-			_statusMsgMap[403] = "Forbidden";
-			_statusMsgMap[404] = "Not Found";
-			_statusMsgMap[405] = "Method Not Allowed";
-			_statusMsgMap[406] = "Not Acceptable";
-			_statusMsgMap[407] = "Proxy Authentication Required";
-			_statusMsgMap[408] = "Request Time-out";
-			_statusMsgMap[409] = " Conflict";
-			_statusMsgMap[410] = " Gone";
-			_statusMsgMap[411] = " Length Required";
-			_statusMsgMap[412] = " Precondition Failed";
-			_statusMsgMap[413] = " Request Entity Too Large";
-			_statusMsgMap[414] = " Request-URI Too Large";
-			_statusMsgMap[415] = " Unsupported Media Type";
-			_statusMsgMap[416] = " Requested range not satisfiable";
-			_statusMsgMap[417] = " Expectation Failed";
-			_statusMsgMap[500] = "Internal Server Error";
-			_statusMsgMap[501] = "Not Implemented";
-			_statusMsgMap[502] = "Bad Gateway";
-			_statusMsgMap[503] = "Service Unavailable";
-			_statusMsgMap[504] = "Gateway Time-out";
-			_statusMsgMap[505] = "HTTP Version not supported";
+			_statusMap.insert(std::pair<int, std::string>(100, "Continue"));
+			_statusMap.insert(std::pair<int, std::string>(101, "Switching Protocols"));
+			_statusMap.insert(std::pair<int, std::string>(200, "OK"));
+			_statusMap.insert(std::pair<int, std::string>(201, "Created"));
+			_statusMap.insert(std::pair<int, std::string>(202, "Accepted"));
+			_statusMap.insert(std::pair<int, std::string>(203, "Non-Authoritative Information"));
+			_statusMap.insert(std::pair<int, std::string>(204, "No Content"));
+			_statusMap.insert(std::pair<int, std::string>(205, "Reset Content"));
+			_statusMap.insert(std::pair<int, std::string>(206, "Partial Content"));
+			_statusMap.insert(std::pair<int, std::string>(300, "Multiple Choices"));
+			_statusMap.insert(std::pair<int, std::string>(301, "Moved Permanently"));
+			_statusMap.insert(std::pair<int, std::string>(302, "Found"));
+			_statusMap.insert(std::pair<int, std::string>(303, "See Other"));
+			_statusMap.insert(std::pair<int, std::string>(304, "Not Modified"));
+			_statusMap.insert(std::pair<int, std::string>(305, "Use Proxy"));
+			_statusMap.insert(std::pair<int, std::string>(307, "Temporary Redirect"));
+			_statusMap.insert(std::pair<int, std::string>(400, "Bad Request"));
+			_statusMap.insert(std::pair<int, std::string>(401, "Unauthorized"));
+			_statusMap.insert(std::pair<int, std::string>(402, "Payment Required"));
+			_statusMap.insert(std::pair<int, std::string>(403, "Forbidden"));
+			_statusMap.insert(std::pair<int, std::string>(404, "Not Found"));
+			_statusMap.insert(std::pair<int, std::string>(405, "Method Not Allowed"));
+			_statusMap.insert(std::pair<int, std::string>(406, "Not Acceptable"));
+			_statusMap.insert(std::pair<int, std::string>(407, "Proxy Authentication Required"));
+			_statusMap.insert(std::pair<int, std::string>(408, "Request Time-out"));
+			_statusMap.insert(std::pair<int, std::string>(409, "Conflict"));
+			_statusMap.insert(std::pair<int, std::string>(410, "Gone"));
+			_statusMap.insert(std::pair<int, std::string>(411, "Length Required"));
+			_statusMap.insert(std::pair<int, std::string>(412, "Precondition Failed"));
+			_statusMap.insert(std::pair<int, std::string>(413, "Request Entity Too Large"));
+			_statusMap.insert(std::pair<int, std::string>(414, "Request-URI Too Large"));
+			_statusMap.insert(std::pair<int, std::string>(415, "Unsupported Media Type"));
+			_statusMap.insert(std::pair<int, std::string>(416, "Requested range not satisfiable"));
+			_statusMap.insert(std::pair<int, std::string>(417, "Expectation Failed"));
+			_statusMap.insert(std::pair<int, std::string>(500, "Internal Server Error"));
+			_statusMap.insert(std::pair<int, std::string>(501, "Not Implemented"));
+			_statusMap.insert(std::pair<int, std::string>(502, "Bad Gateway"));
+			_statusMap.insert(std::pair<int, std::string>(503, "Service Unavailable"));
+			_statusMap.insert(std::pair<int, std::string>(504, "Gateway Time-out"));
+			_statusMap.insert(std::pair<int, std::string>(505, "HTTP Version not supported"));
 		}
 
 };

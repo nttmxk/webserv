@@ -22,4 +22,10 @@ response class
 #define DONE 1
 #define CRLF "\r\n"
 
+enum {
+	GET,
+	POST,
+	DELETE
+};
+
 #endif

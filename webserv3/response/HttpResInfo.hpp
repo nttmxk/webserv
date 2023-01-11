@@ -34,7 +34,7 @@ class HttpResInfo
 		unsigned int _contentLength;
 		std::string _contentEncoding; //gzip etc
 		std::string _resBody; // HTML Body :  <body> ... </body>
-		std::map<int, std::string> _statusMsgMap;
+		std::map<int, std::string> _statusMap;
 
 	public:
 		HttpResInfo()
@@ -65,8 +65,8 @@ class HttpResInfo
 		std::string getHttpVersion() {return (_httpVersion);}
 		int getStatusCode() { return (_statusCode); }
 		std::string getStatusMsg(int code) {
-			if (_statusMsgMap.find(code) != _statusMsgMap.end())
-				return _statusMsgMap[code];
+			if (_statusMap.find(code) != _statusMap.end())
+				return _statusMap[code];
 			 return ("nothinf"); 
 		}
 		std::string getConnection() { return (_connection);}
@@ -102,46 +102,46 @@ class HttpResInfo
 		}
 		void setStatusMsgMap()
 		{
-			_statusMsgMap[100] = "Continue";
-			_statusMsgMap[101] = "Switching Protocols";
-			_statusMsgMap[200] = "OK";
-			_statusMsgMap[201] = "Created";
-			_statusMsgMap[202] = "Accepted";
-			_statusMsgMap[203] = "Non-Authoritative Information";
-			_statusMsgMap[204] = "No Content";
-			_statusMsgMap[205] = "Reset Content";
-			_statusMsgMap[206] = "Partial Content";
-			_statusMsgMap[300] = "Multiple Choices";
-			_statusMsgMap[301] = "Moved Permanently";
-			_statusMsgMap[302] = "Found";
-			_statusMsgMap[303] = "See Other";
-			_statusMsgMap[304] = "Not Modified";
-			_statusMsgMap[305] = "Use Proxy";
-			_statusMsgMap[307] = "Temporary Redirect";
-			_statusMsgMap[400] = "Bad Request";
-			_statusMsgMap[401] = "Unauthorized";
-			_statusMsgMap[402] = "Payment Required";
-			_statusMsgMap[403] = "Forbidden";
-			_statusMsgMap[404] = "Not Found";
-			_statusMsgMap[405] = "Method Not Allowed";
-			_statusMsgMap[406] = "Not Acceptable";
-			_statusMsgMap[407] = "Proxy Authentication Required";
-			_statusMsgMap[408] = "Request Time-out";
-			_statusMsgMap[409] = " Conflict";
-			_statusMsgMap[410] = " Gone";
-			_statusMsgMap[411] = " Length Required";
-			_statusMsgMap[412] = " Precondition Failed";
-			_statusMsgMap[413] = " Request Entity Too Large";
-			_statusMsgMap[414] = " Request-URI Too Large";
-			_statusMsgMap[415] = " Unsupported Media Type";
-			_statusMsgMap[416] = " Requested range not satisfiable";
-			_statusMsgMap[417] = " Expectation Failed";
-			_statusMsgMap[500] = "Internal Server Error";
-			_statusMsgMap[501] = "Not Implemented";
-			_statusMsgMap[502] = "Bad Gateway";
-			_statusMsgMap[503] = "Service Unavailable";
-			_statusMsgMap[504] = "Gateway Time-out";
-			_statusMsgMap[505] = "HTTP Version not supported";
+			_statusMap[100] = "Continue";
+			_statusMap[101] = "Switching Protocols";
+			_statusMap[200] = "OK";
+			_statusMap[201] = "Created";
+			_statusMap[202] = "Accepted";
+			_statusMap[203] = "Non-Authoritative Information";
+			_statusMap[204] = "No Content";
+			_statusMap[205] = "Reset Content";
+			_statusMap[206] = "Partial Content";
+			_statusMap[300] = "Multiple Choices";
+			_statusMap[301] = "Moved Permanently";
+			_statusMap[302] = "Found";
+			_statusMap[303] = "See Other";
+			_statusMap[304] = "Not Modified";
+			_statusMap[305] = "Use Proxy";
+			_statusMap[307] = "Temporary Redirect";
+			_statusMap[400] = "Bad Request";
+			_statusMap[401] = "Unauthorized";
+			_statusMap[402] = "Payment Required";
+			_statusMap[403] = "Forbidden";
+			_statusMap[404] = "Not Found";
+			_statusMap[405] = "Method Not Allowed";
+			_statusMap[406] = "Not Acceptable";
+			_statusMap[407] = "Proxy Authentication Required";
+			_statusMap[408] = "Request Time-out";
+			_statusMap[409] = " Conflict";
+			_statusMap[410] = " Gone";
+			_statusMap[411] = " Length Required";
+			_statusMap[412] = " Precondition Failed";
+			_statusMap[413] = " Request Entity Too Large";
+			_statusMap[414] = " Request-URI Too Large";
+			_statusMap[415] = " Unsupported Media Type";
+			_statusMap[416] = " Requested range not satisfiable";
+			_statusMap[417] = " Expectation Failed";
+			_statusMap[500] = "Internal Server Error";
+			_statusMap[501] = "Not Implemented";
+			_statusMap[502] = "Bad Gateway";
+			_statusMap[503] = "Service Unavailable";
+			_statusMap[504] = "Gateway Time-out";
+			_statusMap[505] = "HTTP Version not supported";
 		}
 
 };

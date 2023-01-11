@@ -134,6 +134,7 @@ void Connection::connectionLoop()
 				}
 				if (_fdMap.find(currEvent->ident) != _fdMap.end())
 				{
+					std::cout << "file event = " << currEvent->ident << std::endl;
 					_clientMap[_fdMap[currEvent->ident]].status = readFile(_clientMap[_fdMap[currEvent->ident]], currEvent->ident);
 
 					switch (_clientMap[_fdMap[currEvent->ident]].status)
@@ -192,6 +193,7 @@ Connection::readFile(InfoClient &infoClient, int fd)
 		return InfoClient::fError;
 	}
 	infoClient.file.buffer += std::string(buffer, size);
+	std::cout << "buffer = " <<infoClient.file.buffer << std::endl;
 	if (size < BUFFER_SIZE)
 	{
 		close(fd);

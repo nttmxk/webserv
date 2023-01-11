@@ -28,7 +28,7 @@ void Uri::checkScheme(std::string &uri, size_t &pos)
 		_valid = false;
 		return;
 	}
-	for (int i = 0; i < pos; ++i)
+	for (int i = 0; (unsigned long)i < pos; ++i)
 	{
 		if (!isCharset(ALPHA DIGIT "+.-", uri[i]))
 		{
@@ -170,5 +170,6 @@ Uri::Uri(const Uri &orig) {
 }
 
 Uri& Uri::operator=(const Uri &orig) {
+	(void)orig;
 	return (*this);
 }

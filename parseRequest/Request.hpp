@@ -15,7 +15,7 @@
 # define SIZE_MAX_HEADER 2048
 # define SIZE_MAX_HOST 128 // verifyhost
 # define SIZE_MAX_CHUNK 3 // hex FFF = dec 4095
-# define SIZE_MAX_BODY 8192
+# define SIZE_MAX_BODY 819200000
 
 /** Request class
  * author: jinoh
@@ -48,6 +48,8 @@ public:
 		std::string port;
 		std::string path;
 		std::string query;
+		std::string target;
+		std::string orig;
 	}	t_result;
 
 	void 		clearRequest();
@@ -61,7 +63,8 @@ public:
 	Request& operator=(const Request &orig);
 
 private:
-	std::string	_orig;
+
+	std::string	_buf;
 	std::string	_head;
 	std::string	_target;
 	std::string	_version;	// no need?
@@ -77,7 +80,6 @@ private:
 	void		parseHeader();
 	void		tokenizeHeader();
 	bool		isOWS(int c);
-	void		checkHeader();
 	void 		verifyHeader();
 	void 		checkHost();
 	void 		checkBodyLength();

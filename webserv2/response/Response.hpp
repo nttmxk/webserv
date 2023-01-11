@@ -35,6 +35,16 @@ public:
 	void	Delete();
 	std::string getResult(){return _result;}
 
+public:
+	std::string makeResponseGET(InfoClient &infoClient);
+	std::string makeResponseERR();
+private:
+	std::string resMsgBody(std::string srcLocation);
+	std::string resMsgHeader(InfoClient &infoClient);
+private:
+		char _fileBuff[1024];
+		int _fileFd;
+		//InfoClient &infoClient;
 	// std::string httpRes2XX();
 	// std::string httpRes3XX();
 	// std::string httpRes4XX();
