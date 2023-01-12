@@ -32,7 +32,7 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 		//cgi 객체 생성후 요청
 	}
 	else { //get
-		makeErrorResponseMsg(infoClient, infoClient.req.t_result.status);
+		makeErrorResponseMsg(infoClient, 404);
 		//makeResponseMsg(infoClient);
 	}
 	//sendReseponse(clientSocket);
@@ -184,7 +184,7 @@ Response::makeErrorResponseMsg(InfoClient &infoClient, int errorCode)
 	}
 	else //connection.cpp **else if (_clientMap[currEvent->ident].status == InfoClient::fComplete)** 로직
 	{
-
+		std::cout << "error message without file read\n";
 	}
 }
 

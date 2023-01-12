@@ -25,6 +25,24 @@ Multiplex::enrollEventToChangeList(uintptr_t ident, int16_t filter, uint16_t fla
 	_changeList.push_back(event);
 }
 
+time_t
+Multiplex::now_plus_n(int n)
+{
+	time_t later = time(NULL);
+
+	return later + n;
+}
+
+void
+Multiplex::add_abs_timer(int n)
+{
+	struct kevent kev;
+
+	EV_SET(&kev, n * 100000, EVFILT_TIMER, EV_ADD, NOTE_SECONDS | NOTE_ABSOLUTE, now_plus_n(n), (void *)n);
+	_changeList.push_back(kev);
+}
+
+
 int
 Multiplex::senseEvents()
 {

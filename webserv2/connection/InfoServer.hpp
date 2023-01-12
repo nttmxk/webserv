@@ -20,15 +20,17 @@ class InfoServer
 		std::string _requestMsg;
 		std::list<int> _clients;
 
-		//add
+		//config
 		std::map<std::string, std::vector<int> > errorPages;
 		std::map< std::string, Location >	Location;
 		std::map< std::string, CgiConfig >	Cgi;
 
+		//file
 
 	public:
 		InfoServer &operator=(InfoServer const &rhs)
 		{
+			memset(&_serverAddr, 0, sizeof(sockaddr_in));
 			_serverSocket = rhs._serverSocket;
 			_ipAddress = rhs._ipAddress;
 			_port = rhs._port;

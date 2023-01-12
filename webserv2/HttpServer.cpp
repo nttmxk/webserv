@@ -17,6 +17,7 @@ HttpServer::HttpServer(Config &config)
 		tmpInfo._serverSocket = NONE;
 		tmpInfo._ipAddress = it.base()->getBServer().host;
 		tmpInfo._port = it.base()->getBServer().port;
+		memset(&tmpInfo._serverAddr, 0, sizeof(tmpInfo._serverAddr));
 		tmpInfo._serverAddr.sin_family = AF_INET; // ip v4
 		tmpInfo._serverAddr.sin_port = htons(tmpInfo._port);
 		tmpInfo._serverAddr.sin_addr.s_addr = inet_addr(tmpInfo._ipAddress.c_str()); // inet_addr converts 'char const *' to 'unsigned long' in network byte order
@@ -32,7 +33,11 @@ HttpServer::HttpServer(Config &config)
 	}
 }
 
-HttpServer::~HttpServer() {}
+HttpServer::~HttpServer() { 
+	std::vector<int>::iterator it;
+	for (it = _serverSockets.begin(); it != _serverSockets.end(); it++)
+		close(*it);
+}
 
 /* HttpServer::openServer() creates server side socket for listening */
 int

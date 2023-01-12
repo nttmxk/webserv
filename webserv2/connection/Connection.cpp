@@ -32,14 +32,14 @@ void Connection::connectionLoop()
 	struct kevent const *currEvent = nullptr;
 	while (true)
 	{
-		std::cout << "\n\n\n\nwhile\n";
+		std::cout << "\n\n****while start*******\n";
 		std::cout << "file_map size = " << _fdMap.size() << std::endl;
 		std::cout << "client map size = " << _clientMap.size() << std::endl;
 		eventsNum = _eventManager.senseEvents();
 		_eventManager.clearChangeList();
 		for (int i = 0; i < eventsNum; ++i)
 		{
-			std::cout << "***for eventsNum = " << eventsNum<< std::endl;
+			std::cout << "***for*** eventsNum = " << eventsNum<< std::endl;
 			currEvent = const_cast<struct kevent const *>(&(_eventManager.getEventList()[i]));
 
 			/* error case */
@@ -62,7 +62,16 @@ void Connection::connectionLoop()
 				// _fdMap.erase(_fdMap.find(currEvent->ident)->first);
 				// close(currEvent->ident);
 			}
+			if (currEvent->filter == EVFILT_TIMER)
+			{
+				std::cout << "EVFILT_TIMER\n";
+				if (_clientMap.find(currEvent->ident) != _clientMap.end())
+				{
+					std::cout << "fd = " << currEvent->ident<< std::endl;;
+					clearTimeoutedAccess(currEvent->ident);
+				}
 
+			}
 			/* read event */
 			if (currEvent->filter == EVFILT_READ)
 			{
@@ -86,6 +95,7 @@ void Connection::connectionLoop()
 					}
 
 					_eventManager.enrollEventToChangeList(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+					_eventManager.add_abs_timer(10);
 
 					_serverMap[currEvent->ident]._clients.push_back(clientSocket);
 					InfoClient infoClient; // need to be initialized
@@ -103,7 +113,7 @@ void Connection::connectionLoop()
 				if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
 					std::cout << "clientStatus read event = " << currEvent->ident << std::endl;
-					char buffer[BUFFER_SIZE] = {0, };
+					char buffer[BUFFER_SIZE + 1] = {0, };
 
 					ssize_t valRead = read(currEvent->ident, &buffer, BUFFER_SIZE);
 					if (valRead == FAIL)
@@ -116,6 +126,7 @@ void Connection::connectionLoop()
 					}
 					else
 					{
+						std::cout << "buffer = " << buffer << std::endl;
 						_clientMap[currEvent->ident].reqMsg = buffer;
 						_clientMap[currEvent->ident].req.parseMessage(_clientMap[currEvent->ident].reqMsg);
 						if (_clientMap[currEvent->ident].req.t_result.pStatus != Request::pComplete &&
@@ -123,9 +134,7 @@ void Connection::connectionLoop()
 							_clientMap[currEvent->ident].reqMsg.assign(BUFFER_SIZE, 0);
 						}
 						else {
-							//_clientMap[currEvent->ident].req.printRequest();
 							_responserMap[currEvent->ident].responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
-							//res.responseToClient(currEvent->ident, _clientMap[currEvent->ident]);
 							if (_responserMap[currEvent->ident].status == Response::rComplete) {
 								std::cout << "Response::rComplete\n";
 								_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
@@ -146,17 +155,13 @@ void Connection::connectionLoop()
 							}
 						}
 					}
-					//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				}
 				if (_fdMap.find(currEvent->ident) != _fdMap.end())
 				{
 					std::cout << "file event = " << currEvent->ident << std::endl;
 					std::cout << _fdMap[currEvent->ident] << std::endl;
 					int res = readFile(_clientMap[_fdMap[currEvent->ident]], currEvent->ident);
-					// if (res == InfoClient::fError)
-					// 	exit(1);
-					// 	_clientMap[_fdMap[currEvent->ident]].status 
-					
+
 					switch (res)
 					{
 					case InfoClient::fError:
@@ -169,19 +174,13 @@ void Connection::connectionLoop()
 						break;
 					case InfoClient::fComplete:
 						_responserMap[_fdMap[currEvent->ident]].startResponse(_clientMap[_fdMap[currEvent->ident]]);
-						// res.startResponse(_clientMap[_fdMap[currEvent->ident]]);
 						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-						std::cout << "_fdMap.find(currEvent->ident) = " << _fdMap.find(currEvent->ident)->first << std::endl;
-						std::cout << "before size = " << _fdMap.size();
-						//_fdMap.erase(_fdMap.find(currEvent->ident)->first);
-						std::cout << "\nafter size = " << _fdMap.size() << std::endl;
 						std::cout << currEvent->ident << " file reading done. open client " << _fdMap[currEvent->ident] << std::endl;;
 						close(currEvent->ident);
 						_fdMap.erase(_fdMap.find(currEvent->ident)->first);
 						break;
 					}
-					//_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 				}
 					
 			}
@@ -189,16 +188,15 @@ void Connection::connectionLoop()
 			/* write event */
 			 if (currEvent->filter == EVFILT_WRITE)
 			{
-				// _eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+				std::cout << "EVFILT_WRITE = " << currEvent->ident << std::endl;
 				if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
-					std::cout << "EVFILT_WRITE = " << currEvent->ident << std::endl;
 					std::cout << _responserMap[currEvent->ident].getResult() << std::endl;
 					_responserMap[currEvent->ident].sendToClient(_clientMap[currEvent->ident]);
 					if (_responserMap[currEvent->ident].status == Response::rComplete)
 					{
 						std::cout << "Response::rComplete\n";
-						//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+						_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 						_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 						_responserMap.erase(_responserMap.find(currEvent->ident));
 						if (_responserMap.find(currEvent->ident) != _responserMap.end())
@@ -210,26 +208,38 @@ void Connection::connectionLoop()
 						std::cout << "eError\n";
 					}
 					//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
-					close(currEvent->ident);
-					_clientMap.erase(currEvent->ident);
+					//_clientMap.erase(currEvent->ident);
 						
+				}
+				if (_fdMap.find(currEvent->ident) != _fdMap.end())
+				{
+
 				}
 				std::cout << "here\n";
 			
 
 				
 			}
+			//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, 60, NULL);
 		}
 	}
 }
 
+// void
+// Connection::ConnectionClear()
+// {
+// 	close(fd);
+	
+// }
+
 int
 Connection::readFile(InfoClient &infoClient, int fd)
 {
-	char buffer[BUFFER_SIZE];
+	char buffer[BUFFER_SIZE + 1];
 	
-	memset(buffer, 0, BUFFER_SIZE);
-	ssize_t size = read(fd, &buffer[0], BUFFER_SIZE);
+	memset(buffer, 0, sizeof(buffer));
+
+	ssize_t size = read(fd, buffer, sizeof(buffer));
 	if (size < 0)
 	{
 		close(fd);
@@ -244,7 +254,27 @@ Connection::readFile(InfoClient &infoClient, int fd)
 		// _fdMap.erase(fd);
 		return InfoClient::fComplete;
 	}
-	std::cout << "return fmaking\n\n";
 	return InfoClient::fMaking;
 }
+
+void
+Connection::clearTimeoutedAccess(int socket)
+{
+	std::cout << "clearTimeoutedAccess" << std::endl;
+	if (_clientMap.find(socket) == _clientMap.end())
+		return ;
+	std::map <int, uintptr_t>::iterator it;
+	for (it = _fdMap.begin(); it != _fdMap.end(); it++)
+	{
+		if (it->second == (uintptr_t)socket)
+		{
+			_fdMap.erase(it->first);
+			continue;
+		}
+	}
+	_clientMap.find(socket)->second.clear();
+	_clientMap.erase(socket);
+	_eventManager.enrollEventToChangeList(socket, EVFILT_TIMER, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+}
+
 

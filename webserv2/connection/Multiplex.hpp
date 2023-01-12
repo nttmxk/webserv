@@ -7,6 +7,7 @@
 
 #include "../includes/cppLibrary.hpp"
 #include "../includes/Define.hpp"
+#include <assert.h>
 
 /***************************************/
 /* Classes managed by Connection class */
@@ -23,6 +24,8 @@ class Multiplex
 	public:
 		void declareKqueue();
 		void enrollEventToChangeList(uintptr_t ident, int16_t filter, uint16_t flags, uint32_t fflags, intptr_t data, void* udata);
+		time_t now_plus_n(int n);
+		void add_abs_timer(int n);
 		int senseEvents();
 		void clearChangeList();
 		struct kevent const *getEventList() const;
