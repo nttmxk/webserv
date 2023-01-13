@@ -17,7 +17,7 @@ class HttpResInfo;
 class Response : public HttpResInfo 
 {
 public:
-	Response() : HttpResInfo(), status(rNone), _result("") { }
+	Response() : HttpResInfo(), status(rNone), _result(""), _sentBytes(0), _totalBytes(0) { }
 public:
 	void	responseToClient(int clientSocket, InfoClient &infoClient);
 	void	sendToClient(InfoClient &infoClient);
@@ -33,7 +33,13 @@ public:
 	void	Get();
 	void	Post();
 	void	Delete();
+
+	//for write(), send()
 	std::string getResult(){return _result;}
+	const char*	getSendResult() const;
+	size_t		getSendResultSize() const;
+	size_t		changePosition(int n);
+	void		clearResult();
 
 public:
 	std::string makeResponseGET(InfoClient &infoClient);
@@ -41,14 +47,15 @@ public:
 private:
 	std::string resMsgBody(std::string srcLocation);
 	std::string resMsgHeader(InfoClient &infoClient);
+
 private:
 		char _fileBuff[1024];
 		int _fileFd;
+		size_t _sentBytes;
+		size_t _totalBytes;
+
 		//InfoClient &infoClient;
-	// std::string httpRes2XX();
-	// std::string httpRes3XX();
-	// std::string httpRes4XX();
-	// std::string httpRes500();
+
 public:
 	int status;
 	std::string fileBuff;
@@ -64,10 +71,21 @@ protected:
 public:
 	enum {
 	rNone = -1,
-	rMaking = 0,
+	rMaking,
 	rComplete,
-	rError,
-	rSending
+	rError
+	};
+
+	enum {
+	sError = -1,
+	sComplete,
+	sSending
+	};
+
+	enum {
+	wError = -1,
+	wComplete,
+	wWriting
 	};
 };
 

@@ -63,6 +63,18 @@ class HttpResInfo
 		std::string getContentEncoding() { return (_contentEncoding); }
 		std::string getResponseBody() {return (_resBody); }
 
+	public:
+		void clearResInfo() {
+			_statusCode = 0;
+ 			_statusMsg= "";
+			_connection = "";
+			_date = "";
+			_contentType = "";
+			_transferEncoding = "";
+			_contentLength= 0;
+			_contentEncoding = "";
+			_resBody = "";
+		}
 
 		
 	public:

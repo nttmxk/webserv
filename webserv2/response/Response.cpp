@@ -27,6 +27,8 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 		std::cout << "redirect message\n\n";
 	}
 	else if (cgiFinder(infoClient)) {
+		infoClient.isCgi = true;
+		
 		std::cout << "cgiFinder message\n\n";
 		// makeCgiResponseMsg(infoClient);
 		//cgi 객체 생성후 요청
@@ -124,22 +126,51 @@ Response::resMsgBody(std::string srcLocation)
 	return body.str();
 }
 
+const char *
+Response::getSendResult() const
+{
+	return (this->_result.c_str() + this->_sentBytes);
+}
 
+size_t
+Response::getSendResultSize() const
+{
+	return (this->_totalBytes - this->_sentBytes);
+}
+
+size_t
+Response::changePosition(int n)
+{
+	if (n > 0)
+	{
+		if (_sentBytes + n >= _totalBytes)
+			_sentBytes = _totalBytes;
+		else
+			_sentBytes += n;
+	}
+	return (getSendResultSize());
+}
 
 void
 Response::sendToClient(InfoClient &infoClient)
 {
-	// std::cout <<"sendToClient = " << infoClient._clientSocket << std::endl;
-	long valWrite = write(infoClient._clientSocket, getResult().c_str(), getResult().size());
-	if (valWrite == (long)getResult().size())
-	{
-		status = rComplete;
-		std::cout << "SERVER RESPONSE SENT\n";
-	}
+
+	size_t n = send(infoClient._clientSocket, getSendResult(), getSendResultSize(), 0);
+	
+	if (n < 0)
+		status = sError;
+	else if (changePosition(n) != 0)
+		status = sSending;
 	else
-	{
-		status = rSending;
-	}
+		status = sComplete;
+}
+
+void
+Response::clearResult()
+{
+	_result.clear();
+	_sentBytes = 0;
+	_totalBytes = 0;
 }
 
 /*

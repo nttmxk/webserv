@@ -15,7 +15,7 @@ class InfoClient
 		int fd;
 		std::size_t size;
 		std::string buffer;
-		fileEvent() : fd(-1), size(0), buffer("") {}
+		fileEvent() : fd(-1), size(0), buffer(""){}
 	};
 	public:
 		enum {
@@ -31,12 +31,13 @@ class InfoClient
 		std::string reqMsg;
 		Request req;
 		int status;
+		bool isCgi;
 
 
 
 	public:
 		InfoClient()
-		: _clientSocket(-1), _server(nullptr), reqMsg("") {}
+		: _clientSocket(-1), _server(nullptr), reqMsg(""), isCgi(false) {}
 		void clear() {
 			file.buffer.clear();
 			file.fd = -1;

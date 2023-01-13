@@ -33,7 +33,9 @@ class Connection
 		Connection();
 		~Connection();
 		void connectionLoop();
+		int readSocket(InfoClient &infoClient);
 		int	readFile(InfoClient &infoClient, int fd);
+		int writeFile(int fd);
 		void clearTimeoutedAccess(int socket);
 		class ConnectionError : public std::exception
 		{

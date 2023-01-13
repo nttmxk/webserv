@@ -39,7 +39,7 @@ void Connection::connectionLoop()
 		_eventManager.clearChangeList();
 		for (int i = 0; i < eventsNum; ++i)
 		{
-			std::cout << "***for*** eventsNum = " << eventsNum<< std::endl;
+			std::cout << "\n***for*** \n eventsNum : " << eventsNum<< std::endl;
 			currEvent = const_cast<struct kevent const *>(&(_eventManager.getEventList()[i]));
 
 			/* error case */
@@ -64,24 +64,22 @@ void Connection::connectionLoop()
 			}
 			if (currEvent->filter == EVFILT_TIMER)
 			{
-				std::cout << "EVFILT_TIMER\n";
+				std::cout << "\n\n EVFILT_TIMER : " << currEvent->ident << "\n";
 				if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
-					std::cout << "fd = " << currEvent->ident<< std::endl;;
 					clearTimeoutedAccess(currEvent->ident);
 				}
-
+				std::cout << "\n\n TIMER EVENT DONE-------------------------------------\n";
 			}
 			/* read event */
 			if (currEvent->filter == EVFILT_READ)
 			{
-				std::cout << "EVFILT_READ ident = " << currEvent->ident << std::endl;;
+				std::cout << "\n\n EVFILT_READ : " << currEvent->ident << std::endl;;
 			
 				if (_serverMap.find(currEvent->ident) != _serverMap.end())
 				{
-					std::cout << "server read event = " << currEvent->ident  << std::endl;
+					std::cout << "SERVER READ EVENT" << std::endl;
 					int clientSocket = accept(currEvent->ident, (sockaddr *)&_serverMap[currEvent->ident]._serverAddr, &_serverMap[currEvent->ident]._serverAddrLen);
-					// std::cout << "	accepted client socket : " << clientSocket << "\n"; // test code
 					if (clientSocket == FAIL)
 					{
 						std::cerr << " Error : accept() \n";
@@ -93,9 +91,9 @@ void Connection::connectionLoop()
 						std::cerr << " Error : fcntl() \n";
 						throw ConnectionError();
 					}
-
+					static const time_t	TIMER = 60;
 					_eventManager.enrollEventToChangeList(clientSocket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-					_eventManager.add_abs_timer(10);
+					_eventManager.enrollEventToChangeList(clientSocket, EVFILT_TIMER, EV_ADD | EV_ONESHOT, NOTE_SECONDS, TIMER, NULL);
 
 					_serverMap[currEvent->ident]._clients.push_back(clientSocket);
 					InfoClient infoClient; // need to be initialized
@@ -112,9 +110,10 @@ void Connection::connectionLoop()
 
 				if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
-					std::cout << "clientStatus read event = " << currEvent->ident << std::endl;
+					std::cout << "CLIENT READ EVENT " << currEvent->ident << std::endl;
 					char buffer[BUFFER_SIZE + 1] = {0, };
 
+					//int ret = readSocket(_clientMap[currEvent->ident]);
 					ssize_t valRead = read(currEvent->ident, &buffer, BUFFER_SIZE);
 					if (valRead == FAIL)
 					{
@@ -126,7 +125,7 @@ void Connection::connectionLoop()
 					}
 					else
 					{
-						std::cout << "buffer = " << buffer << std::endl;
+						//std::cout << "buffer = " << buffer << std::endl;
 						_clientMap[currEvent->ident].reqMsg = buffer;
 						_clientMap[currEvent->ident].req.parseMessage(_clientMap[currEvent->ident].reqMsg);
 						if (_clientMap[currEvent->ident].req.t_result.pStatus != Request::pComplete &&
@@ -174,7 +173,7 @@ void Connection::connectionLoop()
 						break;
 					case InfoClient::fComplete:
 						_responserMap[_fdMap[currEvent->ident]].startResponse(_clientMap[_fdMap[currEvent->ident]]);
-						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+						//_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_READ, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 						_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 						std::cout << currEvent->ident << " file reading done. open client " << _fdMap[currEvent->ident] << std::endl;;
 						close(currEvent->ident);
@@ -182,55 +181,139 @@ void Connection::connectionLoop()
 						break;
 					}
 				}
-					
+				std::cout << "\n\n READ EVENT DONE-------------------------------------\n";
 			}
 
 			/* write event */
 			 if (currEvent->filter == EVFILT_WRITE)
 			{
-				std::cout << "EVFILT_WRITE = " << currEvent->ident << std::endl;
+				std::cout << "\n\n WRITE EVENT : " << currEvent->ident << std::endl;
+
 				if (_clientMap.find(currEvent->ident) != _clientMap.end())
 				{
-					std::cout << _responserMap[currEvent->ident].getResult() << std::endl;
+					std::cout << " CLIENT FD write\n";
+					//std::cout << _responserMap[currEvent->ident].getResult() << std::endl;
+
+					//check sending file, and if there is a file sending, dont make it go down!!!!!!!
+
 					_responserMap[currEvent->ident].sendToClient(_clientMap[currEvent->ident]);
-					if (_responserMap[currEvent->ident].status == Response::rComplete)
+
+					switch (_responserMap[currEvent->ident].status)
 					{
-						std::cout << "Response::rComplete\n";
+					case Response::sError:
+						std::cout << "Response Error\n";
+						if (_clientMap.find(currEvent->ident) != _clientMap.end())
+						{
+							_clientMap.find(currEvent->ident)->second.clear();
+							_clientMap.erase(currEvent->ident);
+							close(currEvent->ident);		
+						}
+						break;
+					case Response::sComplete:
+						std::cout << "Response Comple\n";
 						_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 						_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
+						// _responserMap[currEvent->ident].clearResInfo();
+						// _responserMap[currEvent->ident].clearResult();
 						_responserMap.erase(_responserMap.find(currEvent->ident));
 						if (_responserMap.find(currEvent->ident) != _responserMap.end())
 							std::cout << "not erased\n\n";
 						_clientMap.find(currEvent->ident)->second.clear();
-					}
-					else if (_responserMap[currEvent->ident].status == Response::rError)
-					{
-						std::cout << "eError\n";
-					}
-					//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_WRITE, EV_DELETE | EV_DISABLE, 0, 0, NULL);
-					//_clientMap.erase(currEvent->ident);
-						
+						break;
+					case Response::sSending:
+						std::cout << "Response Sending\n";
+						break;
+					}	
 				}
+
 				if (_fdMap.find(currEvent->ident) != _fdMap.end())
 				{
+					std::cout << " FILE FD write\n";
+					int currentClient = _fdMap[currEvent->ident];
 
-				}
-				std::cout << "here\n";
+					int rdFile = writeFile(currEvent->ident);
+					switch (rdFile)
+					{
+					case Response::wError:
+						std::cout << "File Write Error\n";
+						break;
+					case Response::wComplete:
+						std::cout << "File Write Complete\n";
+						if (_clientMap[currentClient].isCgi == false)
+						{
+							_eventManager.enrollEventToChangeList(_fdMap[currEvent->ident], EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+						}
+						else
+						{
+							//_responserMap[currentClient].excuteCgi();
+							
+						}
+						std::cout << currEvent->ident << " file write done for : " << _fdMap[currEvent->ident] << std::endl;;
+						close(currEvent->ident);
+						_fdMap.erase(_fdMap.find(currEvent->ident)->first);
+						 
+						break;
+					case Response::wWriting:
+						std::cout << "File Writeing\n";
+						break;
 			
+					}
+					
 
-				
+					
+				}
+
+
+				std::cout << "\n\n WRITE EVENT DONE-------------------------------------\n";
 			}
 			//_eventManager.enrollEventToChangeList(currEvent->ident, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, 60, NULL);
 		}
 	}
 }
 
-// void
-// Connection::ConnectionClear()
-// {
-// 	close(fd);
+int
+Connection::writeFile(int fd)
+{
 	
+}
+
+// int
+// Connection::writeFile(int fd)
+// {
+// 	size_t size;
+
+// 	size = write(fd, request.get_body().c_str() + (this->write_size), request.get_body().length() - (this->write_size));
+// 	if (size == (size_t)-1)
+// 	{
+// 		close(this->file_fd);
+// 		this->write_size = 0;
+// 		return -1;
+// 	}
+// 	this->write_size += size;
+// 	if (this->write_size >= request.get_body().length())
+// 	{
+// 		close(this->file_fd);
+// 		this->write_size = 0;
+// 		return 1;
+// 	}
+// 	return 0;
 // }
+
+int
+Connection::readSocket(InfoClient &infoClient)
+{
+	char buffer[BUFFER_SIZE + 1] = {0, };
+	int size;
+
+	size = read(infoClient._clientSocket, buffer, BUFFER_SIZE);
+	if (size < 0)
+	{
+		std::cerr << infoClient._clientSocket << " read error case \n";
+		return -1;
+	}
+}
+
+
 
 int
 Connection::readFile(InfoClient &infoClient, int fd)
@@ -274,6 +357,7 @@ Connection::clearTimeoutedAccess(int socket)
 	}
 	_clientMap.find(socket)->second.clear();
 	_clientMap.erase(socket);
+	close(socket);
 	_eventManager.enrollEventToChangeList(socket, EVFILT_TIMER, EV_DELETE | EV_DISABLE, 0, 0, NULL);
 }
 
