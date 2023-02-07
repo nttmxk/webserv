@@ -9,7 +9,7 @@
 #include "../../configParser/Config_struct.hpp"
 
 /* InfoServer *///-----------------------
-class InfoServer 
+class InfoServer
 {
 	public:
 		int _serverSocket;

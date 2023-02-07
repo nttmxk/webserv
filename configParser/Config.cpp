@@ -56,6 +56,7 @@ Config::configInit(const std::string _path) {
 		if (buffer.size() > 0)
 			file.push_back(buffer);
 	}
+	ifs.close();
 	// printV(file);
 }
 
@@ -104,7 +105,6 @@ Config::serverInit(int start, int end)
 	size_t sub;
 	BaseServer tmpServer;
 
-	// std::cout << "i = " << start << "j = " << end << std::endl;
 	end += start;
   	for ( ; start < end; start++) 
 	{
@@ -178,6 +178,7 @@ Config::serverInit(int start, int end)
 				std::cerr << "Error: Location block / syntax error" << std::endl;
 				exit (1);
 			}
+
 			Location location;
 			location.root = "";
 			location.maxBody = 9000;
@@ -225,20 +226,30 @@ Config::serverInit(int start, int end)
 						ssInt >> i;
 						location.maxBody = i;
 					}
-					else if (tmp == "returnType")
-					{
-						int i;
-						std::stringstream ssInt(file[start].substr(sub + 1));
-						ssInt >> i;
-						location.returnType = i;
-					}
 					else if (tmp == "autoindex")
 					{
 						if (file[start].substr(sub + 1) == "on")
 							location.autoListing = true;
 					}
 					else if (tmp == "return")
-						location.returnRoot = file[start].substr(sub + 1);
+					{
+						size_t tmp;
+						std::string ss = file[start].substr(sub + 1);
+						if ((tmp = ss.find(" ")) != std::string::npos)
+						{
+							location.returnRoot = ss.substr(tmp);
+							ss = ss.substr(0, tmp);
+						}
+						if (!tmpServer.str_is_digit(ss))
+						{
+							std::cerr << "Error: Location redirect block : returnType is not digit error" << std::endl;
+							exit (1);
+						}
+						int i;
+						std::stringstream ssInt(ss);
+						ssInt >> i;
+						location.returnType = i;
+					}
 					else
 					{
 						std::cerr << "Error: Location block has wrong syntax error" << std::endl;
@@ -313,7 +324,6 @@ Config::serverInit(int start, int end)
 		2. check there are all pare
 		3. check there is at least one location block every server
 		4. { } 확인 -> done
-
 	*/
 }
 

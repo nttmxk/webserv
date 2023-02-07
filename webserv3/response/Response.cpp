@@ -35,7 +35,7 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 	}
 	//sendReseponse(clientSocket);
 	infoClient.req.clearRequest();
-	
+
 	//(void)infoClient; // to be used
 
 	// std::cout << " response to client : " << clientSocket << "\n";
@@ -45,12 +45,20 @@ Response::responseToClient(int clientSocket, InfoClient &infoClient)
 	// close(clientSocket);
 }
 
+
+void
+Response::sendToClient()
+{
+
+}
+
+
 // int
 // vecterIntExist(std::vector <int> const &a) {
 // 	for(int i=0; i < a.size(); i++)
 // 	{
 // 		if (a.at(i))
-			
+
 // 	}
 // 		std::cout << a.at(i) << '\n';
 // 	std::cout << "\n\n\n";
@@ -90,7 +98,7 @@ Response::makeErrorResponseMsg(InfoClient &infoClient, int errorCode)
 			std::cout << "errorPath failier" << std::endl;
 		else
 		{
-			std::cout << "fd = "<< fd<<std::endl;
+			std::cout << "fd = "<< fd <<std::endl;
 			fcntl(fd, F_SETFL, O_NONBLOCK);
 			infoClient.file.fd = fd;
 		}
@@ -186,7 +194,6 @@ Response::redirectionFinder(InfoClient &infoClient)
 	}
 	return false;
 }
-
 
 
 // ResponseManager::HandleGetErrorFailure(void) {
